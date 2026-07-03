@@ -6,5 +6,8 @@ test('popup opens and renders Omahi', async ({ context, extensionId }) => {
 
   await expect(page.getByRole('heading', { name: 'Omahi' })).toBeVisible();
   // The popup imports @omahi/core, so this also proves the workspace wiring.
-  await expect(page.locator('.core-check')).toHaveAttribute('data-core', 'omahi-core');
+  await expect(page.locator('.core-check')).toHaveAttribute(
+    'data-core',
+    'menstruation follicular ovulation luteal',
+  );
 });
