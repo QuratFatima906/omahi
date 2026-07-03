@@ -1,0 +1,11 @@
+:root {
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  color: #213547;
+  background-color: #fffdfa;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+}
