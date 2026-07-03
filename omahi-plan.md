@@ -135,12 +135,14 @@ omahi/
 ## 4. Build Plan — PR-Sized Chunks
 
 Each chunk = one standalone, independently testable PR.
+**Naming:** branches use `<type>/<slug>` (`feat/core-phase-engine`); PR titles use Conventional Commits (`feat(core): cycle phase engine`). Each chunk below lists both.
 **Per-chunk workflow:** implement → write tests → iterate until green → run agent as PR reviewer (prompt: _"Review this diff as a senior engineer: correctness, naming, test coverage, edge cases, docs"_) → address feedback → merge.
 
 ---
 
 ### Chunk 0 — Scaffolding ✅ Done
 
+**Branch:** `chore/project-scaffolding` · **PR:** `chore: scaffold pnpm workspace, wxt extension, and ci`
 **Scope:** pnpm workspace, WXT init in `apps/extension`, empty `packages/core`, TS strict, ESLint/Prettier, Vitest wired, Playwright wired with a smoke test that loads the unpacked build, GitHub Actions CI, `CLAUDE.md`, PR template.
 **Test plan:**
 
@@ -153,6 +155,7 @@ Each chunk = one standalone, independently testable PR.
 
 ### Chunk 1 — Core Phase Engine (`packages/core`)
 
+**Branch:** `feat/core-phase-engine` · **PR:** `feat(core): cycle phase engine and forecast`
 **Scope:** `CycleConfig` type + validation; `getPhase(config, date)` → `{ phase, cycleDay, dayOfPhase, nextPhase, daysUntilNextPhase }`; `getForecast(config, fromDate, days)`; handles irregular inputs (cycle 21–40 days, period 2–8 days) and dates before anchor.
 **Test plan (unit only — no UI yet):**
 
@@ -165,6 +168,7 @@ Each chunk = one standalone, independently testable PR.
 
 ### Chunk 2 — Storage Layer
 
+**Branch:** `feat/storage-layer` · **PR:** `feat(extension): versioned storage layer with migrations`
 **Scope:** `lib/storage.ts` in extension: schema v1 (`{ schemaVersion, cycleConfig, periodLog[] }`), get/set wrappers, migration scaffold, export/import JSON helpers.
 **Test plan:**
 
@@ -176,6 +180,7 @@ Each chunk = one standalone, independently testable PR.
 
 ### Chunk 3 — Onboarding Flow
 
+**Branch:** `feat/onboarding-flow` · **PR:** `feat(extension): first-run onboarding flow`
 **Scope:** Popup first-run: 3-step form (last period date → cycle length → period length), validation, Omahi-voice copy, medical disclaimer, writes config via Chunk 2.
 **Test plan:**
 
@@ -187,6 +192,7 @@ Each chunk = one standalone, independently testable PR.
 
 ### Chunk 4 — Popup Dashboard
 
+**Branch:** `feat/popup-dashboard` · **PR:** `feat(extension): phase-aware popup dashboard`
 **Scope:** Current phase card (name, cycle day, phase color), today's focus sections (work / food / workout / rest) from core `suggestions`, days-until-next-phase.
 **Test plan:**
 
@@ -198,6 +204,7 @@ Each chunk = one standalone, independently testable PR.
 
 ### Chunk 5 — Suggestions Content Module
 
+**Branch:** `feat/suggestions-content` · **PR:** `feat(core): per-phase suggestions content module`
 **Scope:** Structured content data in core (`suggestions.ts`): per phase — work mode, food guidance, workout intensity, rest/social note; 3–5 rotating daily tips per phase; deterministic rotation (seeded by date, testable).
 **Test plan:**
 
@@ -208,6 +215,7 @@ Each chunk = one standalone, independently testable PR.
 
 ### Chunk 6 — Phase Calendar
 
+**Branch:** `feat/phase-calendar` · **PR:** `feat(extension): month-view phase calendar`
 **Scope:** Month grid in popup (or popup tab), phase color-coding via `getForecast`, predicted period days marked, prev/next month navigation.
 **Test plan:**
 
@@ -219,6 +227,7 @@ Each chunk = one standalone, independently testable PR.
 
 ### Chunk 7 — Manual Override / Period Logging
 
+**Branch:** `feat/period-logging` · **PR:** `feat(extension): period logging and prediction re-anchoring`
 **Scope:** "Period started today/on date X" action → appends to `periodLog`, re-anchors predictions; history list; undo last entry.
 **Test plan:**
 
@@ -230,6 +239,7 @@ Each chunk = one standalone, independently testable PR.
 
 ### Chunk 8 — Export / Import + Settings
 
+**Branch:** `feat/settings-export-import` · **PR:** `feat(extension): settings view with json export/import`
 **Scope:** Settings view: edit cycle config, export JSON (download), import JSON (file picker with validation), "delete all data".
 **Test plan:**
 
@@ -241,6 +251,7 @@ Each chunk = one standalone, independently testable PR.
 
 ### Chunk 9 — New-Tab Page
 
+**Branch:** `feat/newtab-page` · **PR:** `feat(extension): new-tab page with phase dashboard`
 **Scope:** `entrypoints/newtab/`: full-page layout reusing dashboard components (phase card, today's focus) plus date/greeting; settings toggle to enable/disable the new-tab override (default: ask during onboarding); graceful empty state if onboarding incomplete.
 **Test plan:**
 
@@ -252,6 +263,7 @@ Each chunk = one standalone, independently testable PR.
 
 ### Chunk 10 — Polish & Store Readiness
 
+**Branch:** `chore/store-readiness` · **PR:** `chore: polish pass and chrome web store readiness`
 **Scope:** Omahi voice pass on all copy, icons/branding (O-as-moon), empty/error states, a11y pass (labels, contrast, keyboard), store listing assets, privacy policy page (trivial since local-only).
 **Test plan:**
 
