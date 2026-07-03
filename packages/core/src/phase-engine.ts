@@ -10,9 +10,10 @@
  * - Luteal: end of ovulation window → cycleLength.
  *
  * When a long period would overlap the ovulation window (short cycle + long
- * period), menstruation wins: the window is pushed to start the day after the
- * period ends and the follicular phase may be empty. Phases always partition
- * the cycle with no gaps or overlaps.
+ * period), menstruation wins: the window start is clamped to the day after the
+ * period ends (its end stays put, so it may shrink to a single day) and the
+ * follicular phase may be empty. Phases always partition the cycle with no
+ * gaps or overlaps.
  */
 
 import { parseIsoDate, validateCycleConfig, type CycleConfig } from './cycle-config';
@@ -71,8 +72,7 @@ function formatIsoDate(utcMs: number): string {
   return new Date(utcMs).toISOString().slice(0, 10);
 }
 
-function phaseInfoAt(config: CycleConfig, utcMidnightMs: number): PhaseInfo {
-  const anchorMs = parseIsoDate(config.anchorDate) as number;
+function phaseInfoAt(config: CycleConfig, anchorMs: number, utcMidnightMs: number): PhaseInfo {
   const diffDays = Math.round((utcMidnightMs - anchorMs) / MS_PER_DAY);
   const { cycleLength } = config;
   const cycleDay = (((diffDays % cycleLength) + cycleLength) % cycleLength) + 1;
@@ -84,15 +84,13 @@ function phaseInfoAt(config: CycleConfig, utcMidnightMs: number): PhaseInfo {
 
   const order = PHASES.filter((name) => ranges[name].end >= ranges[name].start);
   const nextPhase = order[(order.indexOf(phase) + 1) % order.length] as Phase;
-  const currentEnd = ranges[phase].end;
-  const nextStart = currentEnd === cycleLength ? cycleLength + 1 : currentEnd + 1;
 
   return {
     phase,
     cycleDay,
     dayOfPhase: cycleDay - ranges[phase].start + 1,
     nextPhase,
-    daysUntilNextPhase: nextStart - cycleDay,
+    daysUntilNextPhase: ranges[phase].end + 1 - cycleDay,
   };
 }
 
@@ -103,7 +101,8 @@ function phaseInfoAt(config: CycleConfig, utcMidnightMs: number): PhaseInfo {
  */
 export function getPhase(config: CycleConfig, today: Date): PhaseInfo {
   validateCycleConfig(config);
-  return phaseInfoAt(config, toUtcMidnight(today));
+  const anchorMs = parseIsoDate(config.anchorDate) as number;
+  return phaseInfoAt(config, anchorMs, toUtcMidnight(today));
 }
 
 /**
@@ -115,9 +114,10 @@ export function getForecast(config: CycleConfig, fromDate: Date, days: number): 
   if (!Number.isInteger(days) || days < 1) {
     throw new RangeError(`days must be a positive integer, got ${days}`);
   }
+  const anchorMs = parseIsoDate(config.anchorDate) as number;
   const startMs = toUtcMidnight(fromDate);
   return Array.from({ length: days }, (_, i) => {
     const dayMs = startMs + i * MS_PER_DAY;
-    return { date: formatIsoDate(dayMs), ...phaseInfoAt(config, dayMs) };
+    return { date: formatIsoDate(dayMs), ...phaseInfoAt(config, anchorMs, dayMs) };
   });
 }

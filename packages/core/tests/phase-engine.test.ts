@@ -129,6 +129,14 @@ describe('phase partition property — cycle lengths 21–40 × period lengths 2
 
         // Menstruation is exactly the period, and dayOfPhase counts up within each block.
         expect(days.filter((d) => d.phase === 'menstruation')).toHaveLength(periodLength);
+
+        // Without clamping, the ovulation window sits exactly at (cycleLength − 14) ± 1.
+        const ovulationDays = days.filter((d) => d.phase === 'ovulation').map((d) => d.cycleDay);
+        if (cycleLength - 15 > periodLength) {
+          expect(ovulationDays).toEqual([cycleLength - 15, cycleLength - 14, cycleLength - 13]);
+        } else {
+          expect(ovulationDays[0]).toBe(periodLength + 1);
+        }
         let expectedDayOfPhase = 0;
         let previousPhase: Phase | undefined;
         for (const day of days) {
