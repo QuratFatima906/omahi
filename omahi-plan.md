@@ -139,7 +139,7 @@ Each chunk = one standalone, independently testable PR.
 
 ---
 
-### Chunk 0 — Scaffolding
+### Chunk 0 — Scaffolding ✅ Done
 
 **Scope:** pnpm workspace, WXT init in `apps/extension`, empty `packages/core`, TS strict, ESLint/Prettier, Vitest wired, Playwright wired with a smoke test that loads the unpacked build, GitHub Actions CI, `CLAUDE.md`, PR template.
 **Test plan:**
