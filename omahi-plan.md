@@ -9,18 +9,18 @@
 
 ### Must Have (MVP)
 
-| #   | Feature                | Description                                                                         |
-| --- | ---------------------- | ----------------------------------------------------------------------------------- |
-| F1  | Cycle setup            | Last period date, cycle length, period length → auto-compute 4 phases               |
-| F2  | Phase engine           | Pure logic: given config + date → phase, cycle day, days-until-next-phase, forecast |
-| F3  | Popup dashboard        | Current phase, cycle day, today's focus (work mode, food, workout, rest)            |
-| F4  | Daily suggestions      | Per-phase content pulled from the phase→lifestyle mapping (see §2)                  |
-| F5  | Phase calendar         | Month view, color-coded phases, predicted period days                               |
-| F6  | Manual override        | Log actual period start; corrections re-anchor predictions                          |
-| F7  | Local-only storage     | `chrome.storage.local`, no server, no account                                       |
-| F8  | Export / import        | JSON backup and restore                                                             |
-| F9  | Omahi voice onboarding | Warm, mahiya-toned copy throughout (English-only for v1)                            |
-| F10 | New-tab page           | Phase + today's plan on every new tab (toggleable in settings)                      |
+| #   | Feature                | Description                                                                                                                       |
+| --- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| F1  | Cycle setup            | Last period date, cycle length, period length → auto-compute 4 phases                                                             |
+| F2  | Phase engine           | Pure logic: given config + date → phase, cycle day, days-until-next-phase, forecast                                               |
+| F3  | Popup dashboard        | Current phase, cycle day, today's focus (work mode, food, workout, rest)                                                          |
+| F4  | Daily suggestions      | Per `phase + dayOfPhase` content (build-time LLM-generated, human-reviewed, shipped static); deterministic date-seeded daily pick |
+| F5  | Phase calendar         | Month view, color-coded phases, predicted period days                                                                             |
+| F6  | Manual override        | Log actual period start; corrections re-anchor predictions                                                                        |
+| F7  | Local-only storage     | `chrome.storage.local`, no server, no account                                                                                     |
+| F8  | Export / import        | JSON backup and restore                                                                                                           |
+| F9  | Omahi voice onboarding | Warm, mahiya-toned copy throughout (English-only for v1)                                                                          |
+| F10 | New-tab page           | Phase + today's plan on every new tab (toggleable in settings)                                                                    |
 
 ### Nice to Have (v2+)
 
@@ -66,7 +66,45 @@
 
 ---
 
-## 3. Technical Specs
+## 3. UI Design (source of truth)
+
+All MVP screens are designed in the Claude Design project — build UI chunks to match these screens, not from scratch:
+
+- **Project:** [Omahi UI](https://claude.ai/design/p/e6d08d9b-c6ba-49bd-9a83-7f7a981085cf?file=Omahi+UI.dc.html) (project id `e6d08d9b-c6ba-49bd-9a83-7f7a981085cf`, file `Omahi UI.dc.html`; brand guide in `Omahi Brand Guide.dc.html`)
+- **Assets:** icons (`assets/icon/` — favicon, 16/32/48/128/512 PNGs, light/dark/gradient SVGs) and logos (`assets/logo/` — wordmarks, badge, lockup) live in the same design project; pull them in for Chunk 10.
+- Popup screens are **380px wide**; new-tab is a full-page layout (designed at 1472×920).
+
+### Design tokens
+
+| Token          | Value                                                                                        |
+| -------------- | -------------------------------------------------------------------------------------------- |
+| Fonts          | Quicksand (headings/brand), Nunito Sans (body)                                               |
+| Brand gradient | `linear-gradient(135deg, #FF7E5F → #D64570)` (dark: `#FF9B7E → #ED6B94`)                     |
+| Surfaces       | app bg `#FBF5F1`, cards `#FFFFFF`, canvas `#F2E8E2`; dark bg `#1D1519`, dark cards `#2A1F26` |
+| Text           | primary `#2E2226`, secondary `#6E5560`/`#8A7078`, muted `#B08D96`                            |
+| Menstruation   | `#C74B6B` on tint `#F3D2DA`                                                                  |
+| Follicular     | `#E8875B` on tint `#FAE0CF`                                                                  |
+| Ovulation      | `#E3A94A` on tint `#F7E6C6`                                                                  |
+| Luteal         | `#96588C` on tint `#E8D6E4`                                                                  |
+
+### Screen → chunk mapping
+
+| Design screen (`data-screen-label`) | What it specifies                                                                                                                                                                                                        | Chunk                          |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ |
+| `Onboarding welcome`                | Gradient hero, "Hi, I'm Omahi" intro, disclaimer copy, "Let's begin" CTA                                                                                                                                                 | 3                              |
+| `Onboarding step 1`                 | Last-period date via inline month calendar, "Not sure" escape hatch, 3-dot progress                                                                                                                                      | 3                              |
+| `Onboarding step 2`                 | Cycle length stepper (−/+) with 21–40 slider, default 28, "Omahi learns as you log" hint                                                                                                                                 | 3                              |
+| `Onboarding step 3`                 | Period-length pills (3–7, default 5), **new-tab opt-in toggle**, heuristics disclaimer, "Start planning"                                                                                                                 | 3 (+9 toggle)                  |
+| `Popup dashboard`                   | Gradient header w/ calendar+settings nav, phase card (name · cycle day, hero line, day circle, 4-segment phase progress bar, next-phase line), Work/Food/Move/Rest rows, "Today's nudge" tip, "My period started →" link | 4 (+5 content, +7 entry point) |
+| `Popup calendar`                    | Month grid, phase-tinted days, today ringed, predicted period dashed, 5-item legend, month nav, "Log period start" CTA                                                                                                   | 6 (+7 CTA)                     |
+| `Popup settings`                    | My cycle rows (anchor date, cycle length, period length), new-tab toggle, export/import/delete-all, disclaimer + version footer                                                                                          | 8 (+9 toggle)                  |
+| `New tab light` / `New tab dark`    | Greeting hero ("Good morning — …"), phase · day label, date + next-event line, 4 focus cards, phase progress bar + next-period date, settings gear; **dark variant follows system, light default**                       | 9                              |
+
+The design file's embedded demo logic (`DCLogic` in `Omahi UI.dc.html`) holds draft per-phase content — hero lines, work/food/move/rest copy, tips, next-phase lines for all 4 phases — use it as the starting point for Chunk 5's `suggestions.ts` (subject to the copy review in that chunk).
+
+---
+
+## 4. Technical Specs
 
 ### Stack (chosen for optimal DX, cost ≈ $0, and AI-friendly code)
 
@@ -132,7 +170,7 @@ omahi/
 
 ---
 
-## 4. Build Plan — PR-Sized Chunks
+## 5. Build Plan — PR-Sized Chunks
 
 Each chunk = one standalone, independently testable PR.
 **Naming:** branches use `<type>/<slug>` (`feat/core-phase-engine`); PR titles use Conventional Commits (`feat(core): cycle phase engine`). Each chunk below lists both.
@@ -181,7 +219,8 @@ Each chunk = one standalone, independently testable PR.
 ### Chunk 3 — Onboarding Flow
 
 **Branch:** `feat/onboarding-flow` · **PR:** `feat(extension): first-run onboarding flow`
-**Scope:** Popup first-run: 3-step form (last period date → cycle length → period length), validation, Omahi-voice copy, medical disclaimer, writes config via Chunk 2.
+**Scope:** Popup first-run: welcome screen + 3-step form (last period date → cycle length → period length), validation, Omahi-voice copy, medical disclaimer, writes config via Chunk 2. Step 3 includes the new-tab opt-in toggle (persist the preference now; Chunk 9 consumes it).
+**Design:** `Onboarding welcome` / `step 1` / `step 2` / `step 3` screens (§3) — inline calendar date picker with "Not sure" fallback, 21–40 stepper+slider, period-length pills, 3-dot progress.
 **Test plan:**
 
 - Unit: form validation logic
@@ -194,6 +233,7 @@ Each chunk = one standalone, independently testable PR.
 
 **Branch:** `feat/popup-dashboard` · **PR:** `feat(extension): phase-aware popup dashboard`
 **Scope:** Current phase card (name, cycle day, phase color), today's focus sections (work / food / workout / rest) from core `suggestions`, days-until-next-phase.
+**Design:** `Popup dashboard` screen (§3) — gradient header with calendar/settings nav, hero line + cycle-day circle, 4-segment phase progress bar, Work/Food/Move/Rest rows with phase-colored dots, "Today's nudge" tip card, "My period started →" link (stub until Chunk 7). Use the §3 phase color/tint tokens.
 **Test plan:**
 
 - Unit: `usePhase` hook with injected fake dates (menstrual/follicular/ovulation/luteal each render correct content)
@@ -205,10 +245,19 @@ Each chunk = one standalone, independently testable PR.
 ### Chunk 5 — Suggestions Content Module
 
 **Branch:** `feat/suggestions-content` · **PR:** `feat(core): per-phase suggestions content module`
-**Scope:** Structured content data in core (`suggestions.ts`): per phase — work mode, food guidance, workout intensity, rest/social note; 3–5 rotating daily tips per phase; deterministic rotation (seeded by date, testable).
+**Scope:** Structured content in core (`suggestions.ts`), keyed by **`phase + dayOfPhase`** (not just phase) so late-luteal ≠ early-luteal and the app feels different every day:
+
+- Per phase: base content for work / food / workout / rest-social
+- Per `dayOfPhase`: a tip/variation layer; where a phase runs longer than authored days, clamp to the last authored day (never crash on long cycles)
+- **Corpus generation:** written with an LLM at build time, human-reviewed by you before merge, shipped as static JSON — no runtime generation, no unreviewed health claims
+- **Daily pick (meelio pattern):** deterministic pure function `getDailySuggestion(config, date)` — index derived from `(dayOfYear + userSeed) % variants`, `today` injected as a parameter; recomputed on every popup/new-tab open (no interval needed)
+- Data files structured per-locale (`suggestions.en.json`) so v2 Urdu/Punjabi packs drop in without refactor
+
+**Design:** seed copy from the `DCLogic` demo content in `Omahi UI.dc.html` (§3) — hero lines, work/food/move/rest text, and tips for all 4 phases already drafted in Omahi voice.
 **Test plan:**
 
-- Unit: every phase has complete content (no empty fields); rotation is deterministic for a given date; copy contains no unverified health claims (manual review checklist in PR)
+- Unit: every `phase × dayOfPhase` slot has complete, non-empty content; clamping works for 21–40 day cycles; picker is deterministic (same date+seed → same output) and covers all variants over consecutive days
+- Manual: copy review checklist in PR — no unverified health claims, disclaimer intact
   **Done when:** content reviewed by you (product owner) before merge; agent review passed.
 
 ---
@@ -217,6 +266,7 @@ Each chunk = one standalone, independently testable PR.
 
 **Branch:** `feat/phase-calendar` · **PR:** `feat(extension): month-view phase calendar`
 **Scope:** Month grid in popup (or popup tab), phase color-coding via `getForecast`, predicted period days marked, prev/next month navigation.
+**Design:** `Popup calendar` screen (§3) — phase-tinted day cells, today ringed with outline, predicted period days dashed, 5-item legend (4 phases + predicted period), "Log period start" CTA (stub until Chunk 7).
 **Test plan:**
 
 - Unit: month-grid date math (weeks, offsets, month boundaries)
@@ -229,6 +279,7 @@ Each chunk = one standalone, independently testable PR.
 
 **Branch:** `feat/period-logging` · **PR:** `feat(extension): period logging and prediction re-anchoring`
 **Scope:** "Period started today/on date X" action → appends to `periodLog`, re-anchors predictions; history list; undo last entry.
+**Design:** entry points already placed in §3 screens — dashboard "My period started →" link and calendar "Log period start" button; wire both here.
 **Test plan:**
 
 - Unit: re-anchoring math (log earlier/later than predicted), undo restores prior state
@@ -241,6 +292,7 @@ Each chunk = one standalone, independently testable PR.
 
 **Branch:** `feat/settings-export-import` · **PR:** `feat(extension): settings view with json export/import`
 **Scope:** Settings view: edit cycle config, export JSON (download), import JSON (file picker with validation), "delete all data".
+**Design:** `Popup settings` screen (§3) — grouped rows: "My cycle" (anchor date / cycle length / period length), "New tab" toggle, "My data" (export / import / delete-all), privacy + disclaimer footer with version.
 **Test plan:**
 
 - Unit: import validation (reject wrong schema, wrong version handled by migration)
@@ -252,7 +304,8 @@ Each chunk = one standalone, independently testable PR.
 ### Chunk 9 — New-Tab Page
 
 **Branch:** `feat/newtab-page` · **PR:** `feat(extension): new-tab page with phase dashboard`
-**Scope:** `entrypoints/newtab/`: full-page layout reusing dashboard components (phase card, today's focus) plus date/greeting; settings toggle to enable/disable the new-tab override (default: ask during onboarding); graceful empty state if onboarding incomplete.
+**Scope:** `entrypoints/newtab/`: full-page layout reusing dashboard components (phase card, today's focus) plus date/greeting; settings toggle to enable/disable the new-tab override (default: ask during onboarding — collected in Chunk 3's step 3); dark variant via `prefers-color-scheme` (light default); graceful empty state if onboarding incomplete.
+**Design:** `New tab light` + `New tab dark` screens (§3) — time-of-day greeting hero, phase · day label, date + next-event line, 4 focus cards, phase progress bar with next-period date, settings gear. Dark tokens in §3.
 **Test plan:**
 
 - Unit: layout-level logic only (component reuse means phase logic is already covered)
@@ -264,7 +317,8 @@ Each chunk = one standalone, independently testable PR.
 ### Chunk 10 — Polish & Store Readiness
 
 **Branch:** `chore/store-readiness` · **PR:** `chore: polish pass and chrome web store readiness`
-**Scope:** Omahi voice pass on all copy, icons/branding (O-as-moon), empty/error states, a11y pass (labels, contrast, keyboard), store listing assets, privacy policy page (trivial since local-only).
+**Scope:** Omahi voice pass on all copy, icons/branding (O-as-moon), empty/error states, a11y pass (labels, contrast, keyboard), store listing assets, privacy policy page (trivial since local-only), package trim (bundle only latin font subsets — the bare `@fontsource-variable` imports ship ~100 KB of unused cyrillic/vietnamese woff2).
+**Design:** pull final icons/logos from the design project's `assets/icon/` (16–512 PNGs, SVGs) and `assets/logo/` (§3); brand rules in `Omahi Brand Guide.dc.html`. Verify screens match the design pixel-reasonably before store submission.
 **Test plan:**
 
 - E2E: full user journey (install → onboard → dashboard → calendar → log → export) as one smoke spec
@@ -279,7 +333,7 @@ Each chunk = one standalone, independently testable PR.
 
 ---
 
-## 5. Decisions & Remaining Questions
+## 6. Decisions & Remaining Questions
 
 ### Decided (2026-07-02)
 
@@ -294,10 +348,10 @@ Each chunk = one standalone, independently testable PR.
 
 ---
 
-## 6. Verification Log (things I did not fully verify — check before relying)
+## 7. Verification Log (things I did not fully verify — check before relying)
 
 - WXT storage util exact API (`wxt/utils/storage`) — confirm in current WXT docs
-- Playwright MV3 extension testing setup — follow the official Playwright guide, flags change between versions
+- Playwright MV3 extension testing setup (incl. `chrome_url_overrides` new-tab behavior) — follow the official Playwright guide, flags change between versions
 - Chrome Web Store fee (~$5 one-time) — approximate
 - Payment providers for extensions (ExtensionPay/Paddle/LemonSqueezy) — unresearched, v2
 - Clinical accuracy of the phase model — verify against a reputable source before finalizing in-app copy

@@ -1,4 +1,4 @@
-# Omahi 🌙
+# Omahi
 
 _O mahi, love every phase._
 
