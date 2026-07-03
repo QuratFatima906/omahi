@@ -153,7 +153,7 @@ Each chunk = one standalone, independently testable PR.
 
 ---
 
-### Chunk 1 — Core Phase Engine (`packages/core`)
+### Chunk 1 — Core Phase Engine (`packages/core`) ✅ Done
 
 **Branch:** `feat/core-phase-engine` · **PR:** `feat(core): cycle phase engine and forecast`
 **Scope:** `CycleConfig` type + validation; `getPhase(config, date)` → `{ phase, cycleDay, dayOfPhase, nextPhase, daysUntilNextPhase }`; `getForecast(config, fromDate, days)`; handles irregular inputs (cycle 21–40 days, period 2–8 days) and dates before anchor.
@@ -166,7 +166,7 @@ Each chunk = one standalone, independently testable PR.
 
 ---
 
-### Chunk 2 — Storage Layer
+### Chunk 2 — Storage Layer ✅ Done
 
 **Branch:** `feat/storage-layer` · **PR:** `feat(extension): versioned storage layer with migrations`
 **Scope:** `lib/storage.ts` in extension: schema v1 (`{ schemaVersion, cycleConfig, periodLog[] }`), get/set wrappers, migration scaffold, export/import JSON helpers.
