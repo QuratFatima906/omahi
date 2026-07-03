@@ -1,4 +1,4 @@
-import { CORE_NAME } from '@omahi/core';
+import { PHASES } from '@omahi/core';
 import './app.css';
 
 function App() {
@@ -7,7 +7,7 @@ function App() {
       <h1>Omahi</h1>
       <p>Love every phase.</p>
       {/* Imports core so the workspace wiring is exercised end-to-end. */}
-      <p className="core-check" data-core={CORE_NAME}>
+      <p className="core-check" data-core={PHASES.join(' ')}>
         Cycle-aware planning is on its way.
       </p>
     </main>
