@@ -7,11 +7,13 @@
  * exercise the real wrapper, not a mock of it.
  */
 
-import { CycleConfigError, parseIsoDate, validateCycleConfig, type CycleConfig } from '@omahi/core';
+import { parseIsoDate, validateCycleConfig, type CycleConfig } from '@omahi/core';
 import { browser } from 'wxt/browser';
 
 export const SCHEMA_VERSION = 1;
 export const STORAGE_KEY = 'omahi';
+/** Where load() parks unreadable stored data instead of bricking on it. */
+export const CORRUPT_BACKUP_KEY = 'omahi-corrupt';
 
 /** One logged period. Start-only for now; Chunk 7 (manual override) builds on this. */
 export interface PeriodLogEntry {
@@ -52,17 +54,29 @@ export function validateState(value: unknown): OmahiState {
       `state.schemaVersion must be ${SCHEMA_VERSION}, got ${JSON.stringify(value.schemaVersion)}`,
     );
   }
+  let cycleConfig: CycleConfig | null = null;
   if (value.cycleConfig !== null) {
     if (!isRecord(value.cycleConfig)) {
       throw new StorageSchemaError('state.cycleConfig must be an object or null');
     }
+    // Rebuild from the known fields with explicit type checks: core's
+    // validators assume well-typed input (its regex would coerce a non-string
+    // anchorDate), and stored/imported junk fields must not round-trip.
+    const { anchorDate, cycleLength, periodLength } = value.cycleConfig;
+    if (
+      typeof anchorDate !== 'string' ||
+      typeof cycleLength !== 'number' ||
+      typeof periodLength !== 'number'
+    ) {
+      throw new StorageSchemaError(
+        'state.cycleConfig must have a string anchorDate and numeric cycleLength/periodLength',
+      );
+    }
+    cycleConfig = { anchorDate, cycleLength, periodLength };
     try {
-      validateCycleConfig(value.cycleConfig as unknown as CycleConfig);
+      validateCycleConfig(cycleConfig);
     } catch (error) {
-      if (error instanceof CycleConfigError) {
-        throw new StorageSchemaError(`state.cycleConfig is invalid: ${error.message}`);
-      }
-      throw error;
+      throw new StorageSchemaError(`state.cycleConfig is invalid: ${(error as Error).message}`);
     }
   }
   if (!Array.isArray(value.periodLog)) {
@@ -77,7 +91,7 @@ export function validateState(value: unknown): OmahiState {
   }
   return {
     schemaVersion: SCHEMA_VERSION,
-    cycleConfig: value.cycleConfig as CycleConfig | null,
+    cycleConfig,
     periodLog: (value.periodLog as PeriodLogEntry[]).map((entry) => ({ start: entry.start })),
   };
 }
@@ -95,6 +109,27 @@ const MIGRATIONS: Record<number, (state: Record<string, unknown>) => Record<stri
 };
 
 /**
+ * The schema version a raw stored object claims: absent = 0 (the
+ * pre-versioned shape). A present but non-integer or out-of-range version is
+ * corrupt or from a newer app — never guess, throw.
+ */
+function storedSchemaVersion(raw: Record<string, unknown>): number {
+  if (!('schemaVersion' in raw)) {
+    return 0;
+  }
+  const version = raw.schemaVersion;
+  if (typeof version !== 'number' || !Number.isInteger(version) || version < 1) {
+    throw new StorageSchemaError(`invalid schemaVersion ${JSON.stringify(version)}`);
+  }
+  if (version > SCHEMA_VERSION) {
+    throw new StorageSchemaError(
+      `unsupported schemaVersion ${version} (this app supports up to ${SCHEMA_VERSION})`,
+    );
+  }
+  return version;
+}
+
+/**
  * Lift raw stored data to the current schema and validate it.
  * `undefined`/`null` (nothing stored yet) becomes an empty state.
  */
@@ -105,12 +140,7 @@ export function migrateState(raw: unknown): OmahiState {
   if (!isRecord(raw)) {
     throw new StorageSchemaError(`stored state must be an object, got ${typeof raw}`);
   }
-  let version = typeof raw.schemaVersion === 'number' ? raw.schemaVersion : 0;
-  if (!Number.isInteger(version) || version < 0 || version > SCHEMA_VERSION) {
-    throw new StorageSchemaError(
-      `unsupported schemaVersion ${JSON.stringify(raw.schemaVersion)} (this app supports up to ${SCHEMA_VERSION})`,
-    );
-  }
+  let version = storedSchemaVersion(raw);
   let state = raw;
   while (version < SCHEMA_VERSION) {
     state = MIGRATIONS[version]!(state);
@@ -154,8 +184,21 @@ export function createOmahiStorage(area: StorageAreaLike): OmahiStorage {
   async function load(): Promise<OmahiState> {
     const items = await area.get(STORAGE_KEY);
     const raw = items[STORAGE_KEY];
-    const state = migrateState(raw);
-    if (isRecord(raw) && raw.schemaVersion !== SCHEMA_VERSION) {
+    let state: OmahiState;
+    try {
+      state = migrateState(raw);
+    } catch (error) {
+      /* v8 ignore next 3 -- migrateState only throws StorageSchemaError */
+      if (!(error instanceof StorageSchemaError)) {
+        throw error;
+      }
+      // Unreadable data would brick every surface forever. Quarantine it for
+      // manual recovery and start fresh instead.
+      state = createEmptyState();
+      await area.set({ [CORRUPT_BACKUP_KEY]: raw, [STORAGE_KEY]: state });
+      return state;
+    }
+    if (isRecord(raw) && storedSchemaVersion(raw) !== SCHEMA_VERSION) {
       await area.set({ [STORAGE_KEY]: state });
     }
     return state;
@@ -177,7 +220,9 @@ export function createOmahiStorage(area: StorageAreaLike): OmahiStorage {
 }
 
 /** App-wide instance bound to the real extension storage. */
+/* v8 ignore start -- browser binding; exercised by e2e, not unit tests */
 export const omahiStorage = createOmahiStorage({
   get: (key) => browser.storage.local.get(key),
   set: (items) => browser.storage.local.set(items),
 });
+/* v8 ignore stop */

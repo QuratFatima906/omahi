@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CORRUPT_BACKUP_KEY,
   createEmptyState,
   createOmahiStorage,
   exportStateJson,
@@ -63,6 +64,18 @@ describe('validateState', () => {
     ['string schemaVersion', { schemaVersion: '1', cycleConfig: null, periodLog: [] }],
     ['cycleConfig not object', { schemaVersion: 1, cycleConfig: 'x', periodLog: [] }],
     [
+      'cycleConfig non-string anchorDate',
+      {
+        schemaVersion: 1,
+        cycleConfig: { ...validConfig, anchorDate: ['2026-06-20'] },
+        periodLog: [],
+      },
+    ],
+    [
+      'cycleConfig non-number cycleLength',
+      { schemaVersion: 1, cycleConfig: { ...validConfig, cycleLength: '28' }, periodLog: [] },
+    ],
+    [
       'cycleConfig out of range',
       { schemaVersion: 1, cycleConfig: { ...validConfig, cycleLength: 99 }, periodLog: [] },
     ],
@@ -91,6 +104,15 @@ describe('validateState', () => {
       periodLog: [{ start: '2026-06-20', extra: true }],
     });
     expect(state.periodLog).toEqual([{ start: '2026-06-20' }]);
+  });
+
+  it('strips unknown fields from cycleConfig', () => {
+    const state = validateState({
+      schemaVersion: 1,
+      cycleConfig: { ...validConfig, junk: true },
+      periodLog: [],
+    });
+    expect(state.cycleConfig).toEqual(validConfig);
   });
 });
 
@@ -123,7 +145,9 @@ describe('migrateState', () => {
   it.each([
     ['non-object', 'hello'],
     ['negative version', { schemaVersion: -1 }],
+    ['explicit version 0', { schemaVersion: 0 }],
     ['fractional version', { schemaVersion: 0.5 }],
+    ['string version', { schemaVersion: '2', cycleConfig: null, periodLog: [] }],
     ['migrated-but-invalid payload', { cycleConfig: { ...validConfig, periodLength: 99 } }],
   ])('rejects %s', (_name, value) => {
     expect(() => migrateState(value)).toThrow(StorageSchemaError);
@@ -196,9 +220,13 @@ describe('createOmahiStorage', () => {
     expect(getSetCalls()).toBe(1);
   });
 
-  it('load surfaces corrupt stored data as a schema error', async () => {
-    const { area } = createFakeArea({ [STORAGE_KEY]: 'corrupt' });
-    await expect(createOmahiStorage(area).load()).rejects.toThrow(StorageSchemaError);
+  it('load quarantines corrupt stored data and starts fresh instead of bricking', async () => {
+    const { area, data } = createFakeArea({ [STORAGE_KEY]: 'corrupt' });
+    const storage = createOmahiStorage(area);
+    expect(await storage.load()).toEqual(createEmptyState());
+    expect(data[CORRUPT_BACKUP_KEY]).toBe('corrupt');
+    expect(data[STORAGE_KEY]).toEqual(createEmptyState());
+    expect(await storage.load()).toEqual(createEmptyState());
   });
 
   it('saveCycleConfig preserves the rest of the state', async () => {
