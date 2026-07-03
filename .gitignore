@@ -1,0 +1,21 @@
+node_modules/
+.output/
+.wxt/
+dist/
+stats.html
+stats-*.json
+*.log
+web-ext.config.ts
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+
+# OS / editor
+.DS_Store
+.env
+.env.*
+.idea/
+.vscode/*
+!.vscode/extensions.json
