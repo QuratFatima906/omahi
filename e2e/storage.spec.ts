@@ -1,12 +1,8 @@
 import { expect, test } from './fixtures';
 
-/** Matches OmahiState / STORAGE_KEY in apps/extension/lib/storage.ts. */
+/** Matches STORAGE_KEY / OmahiState in apps/extension/lib/storage.ts. */
 const STORAGE_KEY = 'omahi';
-const seededState = {
-  schemaVersion: 1,
-  cycleConfig: { anchorDate: '2026-06-20', cycleLength: 28, periodLength: 5 },
-  periodLog: [{ start: '2026-06-20' }],
-};
+const config = { anchorDate: '2026-06-20', cycleLength: 28, periodLength: 5 };
 
 // Extension pages expose chrome.storage; the e2e tsconfig has no chrome types,
 // so declare the minimal surface these evaluate() callbacks use.
@@ -19,29 +15,36 @@ declare const chrome: {
   };
 };
 
-test('state set via chrome.storage.local survives reload and fresh pages', async ({
+test('popup runs the storage layer: migrates seeded v0 data and persists it', async ({
   context,
   extensionId,
 }) => {
   const popupUrl = `chrome-extension://${extensionId}/popup.html`;
 
+  // Seed a pre-versioned (v0) state behind the app's back.
   const page = await context.newPage();
   await page.goto(popupUrl);
-  await page.evaluate(([key, state]) => chrome.storage.local.set({ [key as string]: state }), [
-    STORAGE_KEY,
-    seededState,
-  ] as const);
+  await page.evaluate(
+    ([key, cfg]) => chrome.storage.local.set({ [key as string]: { cycleConfig: cfg } }),
+    [STORAGE_KEY, config] as const,
+  );
 
+  // On reload the popup's storage layer loads, migrates to v1, and persists
+  // before rendering the data attributes.
   await page.reload();
-  const afterReload = await page.evaluate((key) => chrome.storage.local.get(key), STORAGE_KEY);
-  expect(afterReload[STORAGE_KEY]).toEqual(seededState);
+  await expect(page.locator('main')).toHaveAttribute('data-storage', 'v1');
+  await expect(page.locator('main')).toHaveAttribute('data-onboarded', 'true');
+  const migrated = await page.evaluate((key) => chrome.storage.local.get(key), STORAGE_KEY);
+  expect(migrated[STORAGE_KEY]).toEqual({
+    schemaVersion: 1,
+    cycleConfig: config,
+    periodLog: [],
+  });
   await page.close();
 
+  // The migrated state persists into a fresh page.
   const freshPage = await context.newPage();
   await freshPage.goto(popupUrl);
-  const afterFreshPage = await freshPage.evaluate(
-    (key) => chrome.storage.local.get(key),
-    STORAGE_KEY,
-  );
-  expect(afterFreshPage[STORAGE_KEY]).toEqual(seededState);
+  await expect(freshPage.locator('main')).toHaveAttribute('data-storage', 'v1');
+  await expect(freshPage.locator('main')).toHaveAttribute('data-onboarded', 'true');
 });

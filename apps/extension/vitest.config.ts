@@ -6,6 +6,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['lib/**'],
+      thresholds: { branches: 100, functions: 100, lines: 100, statements: 100 },
     },
   },
 });
