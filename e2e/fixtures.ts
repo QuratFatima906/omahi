@@ -13,6 +13,9 @@ import { test as base, chromium, type BrowserContext } from '@playwright/test';
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const pathToExtension = path.join(dirname, '../apps/extension/.output/chrome-mv3');
 
+/** Matches STORAGE_KEY in apps/extension/lib/storage.ts. */
+export const STORAGE_KEY = 'omahi';
+
 if (!existsSync(pathToExtension)) {
   throw new Error(`Built extension not found at ${pathToExtension} — run \`pnpm build\` first.`);
 }

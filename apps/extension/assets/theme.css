@@ -1,0 +1,51 @@
+/**
+ * Omahi design tokens — Phase colors pair with their tints; the brand
+ * gradient runs coral → rose.
+ */
+@import 'tailwindcss';
+
+@theme {
+  --font-display: 'Quicksand Variable', 'Quicksand', sans-serif;
+  --font-sans: 'Nunito Sans Variable', 'Nunito Sans', sans-serif;
+
+  --color-coral: #ff7e5f;
+  --color-rose: #d64570;
+
+  --color-surface: #fbf5f1;
+  --color-card: #ffffff;
+  --color-line: #f0e2dc;
+  --color-hairline: #f8eee9;
+
+  --color-ink: #2e2226;
+  --color-ink-soft: #6e5560;
+  --color-ink-muted: #8a7078;
+  --color-ink-faint: #b08d96;
+  --color-ink-ghost: #c9aeb6;
+
+  --color-menstruation: #c74b6b;
+  --color-menstruation-tint: #f3d2da;
+  --color-follicular: #e8875b;
+  --color-follicular-tint: #fae0cf;
+  --color-ovulation: #e3a94a;
+  --color-ovulation-tint: #f7e6c6;
+  --color-luteal: #96588c;
+  --color-luteal-tint: #e8d6e4;
+}
+
+@utility bg-brand-gradient {
+  background-image: linear-gradient(135deg, var(--color-coral) 0%, var(--color-rose) 100%);
+}
+
+@utility text-brand-gradient {
+  background-image: linear-gradient(135deg, var(--color-coral) 0%, var(--color-rose) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
