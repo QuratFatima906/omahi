@@ -47,7 +47,7 @@ interface PhaseRanges {
   luteal: { start: number; end: number };
 }
 
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
+export const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const LUTEAL_HEURISTIC_DAYS = 14;
 
 function getPhaseRanges(config: CycleConfig): PhaseRanges {
