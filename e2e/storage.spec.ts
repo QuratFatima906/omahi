@@ -1,7 +1,5 @@
-import { expect, test } from './fixtures';
+import { expect, STORAGE_KEY, test } from './fixtures';
 
-/** Matches STORAGE_KEY / OmahiState in apps/extension/lib/storage.ts. */
-const STORAGE_KEY = 'omahi';
 const config = { anchorDate: '2026-06-20', cycleLength: 28, periodLength: 5 };
 
 // Extension pages expose chrome.storage; the e2e tsconfig has no chrome types,
@@ -29,22 +27,23 @@ test('popup runs the storage layer: migrates seeded v0 data and persists it', as
     [STORAGE_KEY, config] as const,
   );
 
-  // On reload the popup's storage layer loads, migrates to v1, and persists
+  // On reload the popup's storage layer loads, migrates to v2, and persists
   // before rendering the data attributes.
   await page.reload();
-  await expect(page.locator('main')).toHaveAttribute('data-storage', 'v1');
+  await expect(page.locator('main')).toHaveAttribute('data-storage', 'v2');
   await expect(page.locator('main')).toHaveAttribute('data-onboarded', 'true');
   const migrated = await page.evaluate((key) => chrome.storage.local.get(key), STORAGE_KEY);
   expect(migrated[STORAGE_KEY]).toEqual({
-    schemaVersion: 1,
+    schemaVersion: 2,
     cycleConfig: config,
     periodLog: [],
+    settings: { newTabEnabled: false },
   });
   await page.close();
 
   // The migrated state persists into a fresh page.
   const freshPage = await context.newPage();
   await freshPage.goto(popupUrl);
-  await expect(freshPage.locator('main')).toHaveAttribute('data-storage', 'v1');
+  await expect(freshPage.locator('main')).toHaveAttribute('data-storage', 'v2');
   await expect(freshPage.locator('main')).toHaveAttribute('data-onboarded', 'true');
 });

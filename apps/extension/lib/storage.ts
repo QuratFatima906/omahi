@@ -10,7 +10,7 @@
 import { parseIsoDate, validateCycleConfig, type CycleConfig } from '@omahi/core';
 import { browser } from 'wxt/browser';
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 export const STORAGE_KEY = 'omahi';
 /** Where load() parks unreadable stored data instead of bricking on it. */
 export const CORRUPT_BACKUP_KEY = 'omahi-corrupt';
@@ -21,11 +21,18 @@ export interface PeriodLogEntry {
   start: string;
 }
 
+/** User preferences. Collected during onboarding; editable in settings (Chunk 8). */
+export interface OmahiSettings {
+  /** Whether the new-tab page override is on (Chunk 9 consumes this). */
+  newTabEnabled: boolean;
+}
+
 export interface OmahiState {
   schemaVersion: typeof SCHEMA_VERSION;
   /** `null` until onboarding completes. */
   cycleConfig: CycleConfig | null;
   periodLog: PeriodLogEntry[];
+  settings: OmahiSettings;
 }
 
 /** Thrown when stored or imported data doesn't match the schema. */
@@ -36,8 +43,22 @@ export class StorageSchemaError extends Error {
   }
 }
 
+/**
+ * Settings for users who never answered the new-tab question (pre-v2 states
+ * and fresh installs before onboarding): off, so an update never hijacks the
+ * new tab without consent. Onboarding sets it explicitly.
+ */
+export function createDefaultSettings(): OmahiSettings {
+  return { newTabEnabled: false };
+}
+
 export function createEmptyState(): OmahiState {
-  return { schemaVersion: SCHEMA_VERSION, cycleConfig: null, periodLog: [] };
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    cycleConfig: null,
+    periodLog: [],
+    settings: createDefaultSettings(),
+  };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -89,10 +110,14 @@ export function validateState(value: unknown): OmahiState {
       );
     }
   }
+  if (!isRecord(value.settings) || typeof value.settings.newTabEnabled !== 'boolean') {
+    throw new StorageSchemaError('state.settings must have a boolean newTabEnabled');
+  }
   return {
     schemaVersion: SCHEMA_VERSION,
     cycleConfig,
     periodLog: (value.periodLog as PeriodLogEntry[]).map((entry) => ({ start: entry.start })),
+    settings: { newTabEnabled: value.settings.newTabEnabled },
   };
 }
 
@@ -105,6 +130,11 @@ const MIGRATIONS: Record<number, (state: Record<string, unknown>) => Record<stri
     schemaVersion: 1,
     cycleConfig: state.cycleConfig ?? null,
     periodLog: state.periodLog ?? [],
+  }),
+  1: (state) => ({
+    ...state,
+    schemaVersion: 2,
+    settings: createDefaultSettings(),
   }),
 };
 
@@ -178,6 +208,8 @@ export interface OmahiStorage {
   save(state: OmahiState): Promise<void>;
   /** Validate and persist a new cycle config, preserving the rest of the state. */
   saveCycleConfig(config: CycleConfig): Promise<OmahiState>;
+  /** Persist the onboarding result (config + settings) in one write. */
+  completeOnboarding(config: CycleConfig, settings: OmahiSettings): Promise<OmahiState>;
 }
 
 export function createOmahiStorage(area: StorageAreaLike): OmahiStorage {
@@ -208,14 +240,19 @@ export function createOmahiStorage(area: StorageAreaLike): OmahiStorage {
     await area.set({ [STORAGE_KEY]: validateState(state) });
   }
 
+  /** Read-modify-write: load fresh (another surface may have written), patch, save. */
+  async function update(patch: Partial<OmahiState>): Promise<OmahiState> {
+    const state = { ...(await load()), ...patch };
+    await save(state);
+    return state;
+  }
+
   return {
     load,
     save,
-    async saveCycleConfig(config: CycleConfig): Promise<OmahiState> {
-      const state = { ...(await load()), cycleConfig: config };
-      await save(state);
-      return state;
-    },
+    saveCycleConfig: (config: CycleConfig) => update({ cycleConfig: config }),
+    completeOnboarding: (config: CycleConfig, settings: OmahiSettings) =>
+      update({ cycleConfig: config, settings }),
   };
 }
 

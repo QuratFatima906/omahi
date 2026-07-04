@@ -13,9 +13,13 @@
     "postinstall": "wxt prepare"
   },
   "dependencies": {
+    "@fontsource-variable/nunito-sans": "^5.2.7",
+    "@fontsource-variable/quicksand": "^5.2.10",
     "@omahi/core": "workspace:*",
+    "@tailwindcss/vite": "^4.3.2",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react-dom": "^19.2.4",
+    "tailwindcss": "^4.3.2"
   },
   "devDependencies": {
     "@types/react": "^19.2.14",
