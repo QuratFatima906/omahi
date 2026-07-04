@@ -1,28 +1,9 @@
 import type { Page } from '@playwright/test';
-import { expect, STORAGE_KEY, test } from './fixtures';
+import { browserToday, expect, STORAGE_KEY, test, toIso } from './fixtures';
 
-// Extension pages expose chrome.storage; the e2e tsconfig has no chrome types,
-// so declare the minimal surface these evaluate() callbacks use.
-declare const chrome: {
-  storage: {
-    local: {
-      get(key: string): Promise<Record<string, unknown>>;
-    };
-  };
-};
-
-function pad2(value: number): string {
-  return String(value).padStart(2, '0');
-}
-
-function toIso(date: Date): string {
-  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
-}
-
-/** The 15th of last month — always in the past, so always selectable. */
-function lastMonth15th(): Date {
-  const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth() - 1, 15);
+/** The 15th of the month before `today` — always in the past, so always selectable. */
+function month15thBefore(today: Date): Date {
+  return new Date(today.getFullYear(), today.getMonth() - 1, 15);
 }
 
 async function openPopup(page: Page, extensionId: string) {
@@ -47,7 +28,9 @@ test('happy path: onboarding writes config and reopening skips it', async ({
     page.getByRole('heading', { name: 'When did your last period start?' }),
   ).toBeVisible();
 
-  // Pick the 15th of last month — unambiguously in the past.
+  // Pick the 15th of last month — unambiguously in the past. "Today" comes
+  // from the browser clock so a midnight-spanning run can't skew expectations.
+  const today = await browserToday(page);
   await page.getByRole('button', { name: 'Previous month' }).click();
   await page.getByRole('button', { name: '15', exact: true }).click();
   await page.getByRole('button', { name: 'Continue' }).click();
@@ -69,13 +52,13 @@ test('happy path: onboarding writes config and reopening skips it', async ({
   );
   await page.getByRole('button', { name: 'Start planning' }).click();
 
-  // Onboarding hands off to the (stub) dashboard.
+  // Onboarding hands off to the dashboard.
   await expect(page.locator('main')).toHaveAttribute('data-onboarded', 'true');
-  await expect(page.getByRole('heading', { name: "You're all set" })).toBeVisible();
+  await expect(page.getByText("Today's nudge")).toBeVisible();
 
   expect(await readState(page)).toEqual({
     schemaVersion: 2,
-    cycleConfig: { anchorDate: toIso(lastMonth15th()), cycleLength: 30, periodLength: 6 },
+    cycleConfig: { anchorDate: toIso(month15thBefore(today)), cycleLength: 30, periodLength: 6 },
     periodLog: [],
     settings: { newTabEnabled: true },
   });
@@ -83,7 +66,7 @@ test('happy path: onboarding writes config and reopening skips it', async ({
   // Reopening the popup skips onboarding.
   await page.reload();
   await expect(page.locator('main')).toHaveAttribute('data-onboarded', 'true');
-  await expect(page.getByRole('heading', { name: "You're all set" })).toBeVisible();
+  await expect(page.getByText("Today's nudge")).toBeVisible();
   await expect(page.getByRole('heading', { name: "Hi, I'm Omahi" })).toBeHidden();
 });
 
@@ -144,6 +127,7 @@ test('"Not sure" anchors to today; new-tab toggle can be declined', async ({
   await openPopup(page, extensionId);
 
   await page.getByRole('button', { name: "Let's begin" }).click();
+  const today = await browserToday(page);
   await page.getByRole('button', { name: 'Not sure' }).click();
 
   // Skips straight to step 2 with defaults.
@@ -158,7 +142,7 @@ test('"Not sure" anchors to today; new-tab toggle can be declined', async ({
 
   expect(await readState(page)).toEqual({
     schemaVersion: 2,
-    cycleConfig: { anchorDate: toIso(new Date()), cycleLength: 28, periodLength: 5 },
+    cycleConfig: { anchorDate: toIso(today), cycleLength: 28, periodLength: 5 },
     periodLog: [],
     settings: { newTabEnabled: false },
   });

@@ -18,6 +18,7 @@ export {
 export {
   getForecast,
   getPhase,
+  getPhaseLengths,
   MS_PER_DAY,
   PHASES,
   type ForecastDay,
