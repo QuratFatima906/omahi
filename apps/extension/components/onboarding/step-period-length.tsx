@@ -1,4 +1,5 @@
 import { MAX_PERIOD_LENGTH, MIN_PERIOD_LENGTH } from '@omahi/core';
+import { ToggleSwitch } from '../toggle-switch';
 import { PrimaryButton, SecondaryButton } from './buttons';
 import { StepShell } from './step-shell';
 
@@ -67,22 +68,11 @@ export function StepPeriodLength({
             settings.
           </div>
         </div>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={newTabEnabled}
-          aria-label="Omahi on every new tab"
-          onClick={onToggleNewTab}
-          className={`relative h-[27px] w-[46px] shrink-0 cursor-pointer rounded-full transition-colors ${
-            newTabEnabled ? 'bg-brand-gradient' : 'bg-line'
-          }`}
-        >
-          <span
-            className={`absolute top-[3px] h-[21px] w-[21px] rounded-full bg-white shadow transition-all ${
-              newTabEnabled ? 'left-[22px]' : 'left-[3px]'
-            }`}
-          />
-        </button>
+        <ToggleSwitch
+          checked={newTabEnabled}
+          label="Omahi on every new tab"
+          onToggle={onToggleNewTab}
+        />
       </div>
       <p className="mt-[18px] text-[11.5px] leading-relaxed text-ink-faint">
         Phase estimates are heuristics — real timing varies from body to body. Suggestions are

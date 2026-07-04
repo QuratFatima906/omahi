@@ -277,31 +277,91 @@ describe('createOmahiStorage', () => {
     expect(await storage.load()).toEqual(createEmptyState());
   });
 
-  it('saveCycleConfig preserves the rest of the state', async () => {
+  it('saveCycleConfig merges a patch and preserves the rest of the state', async () => {
     const { area } = createFakeArea({
       [STORAGE_KEY]: {
         ...base(),
+        cycleConfig: validConfig,
         periodLog: [{ start: '2026-05-23' }],
         settings: { newTabEnabled: true },
       },
     });
     const storage = createOmahiStorage(area);
-    const state = await storage.saveCycleConfig(validConfig);
+    const state = await storage.saveCycleConfig({ cycleLength: 30 });
     expect(state).toEqual({
       schemaVersion: 2,
-      cycleConfig: validConfig,
+      cycleConfig: { ...validConfig, cycleLength: 30 },
       periodLog: [{ start: '2026-05-23' }],
       settings: { newTabEnabled: true },
     });
     expect(await storage.load()).toEqual(state);
   });
 
-  it('saveCycleConfig rejects an out-of-range config', async () => {
-    const { area } = createFakeArea();
+  it('saveCycleConfig throws before onboarding', async () => {
+    const { area } = createFakeArea({ [STORAGE_KEY]: base() });
     const storage = createOmahiStorage(area);
-    await expect(storage.saveCycleConfig({ ...validConfig, cycleLength: 5 })).rejects.toThrow(
-      StorageSchemaError,
-    );
+    await expect(storage.saveCycleConfig({ cycleLength: 30 })).rejects.toThrow(StorageSchemaError);
+  });
+
+  it('sequential patches compose instead of clobbering each other', async () => {
+    const { area } = createFakeArea({ [STORAGE_KEY]: { ...base(), cycleConfig: validConfig } });
+    const storage = createOmahiStorage(area);
+    await storage.saveCycleConfig({ cycleLength: 29 });
+    const state = await storage.saveCycleConfig({ periodLength: 4 });
+    expect(state.cycleConfig).toEqual({ ...validConfig, cycleLength: 29, periodLength: 4 });
+  });
+
+  it('saveCycleConfig prunes log entries newer than a changed anchor', async () => {
+    const { area } = createFakeArea({
+      [STORAGE_KEY]: {
+        ...base(),
+        cycleConfig: validConfig,
+        periodLog: [{ start: '2026-05-23' }, { start: '2026-07-18' }],
+      },
+    });
+    const storage = createOmahiStorage(area);
+    // Correcting the anchor to an earlier date drops the newer (overriding) entry.
+    const state = await storage.saveCycleConfig({ anchorDate: '2026-07-01' });
+    expect(state.cycleConfig?.anchorDate).toBe('2026-07-01');
+    expect(state.periodLog).toEqual([{ start: '2026-05-23' }]);
+  });
+
+  it('saveCycleConfig keeps the log when the anchor is unchanged', async () => {
+    const { area } = createFakeArea({
+      [STORAGE_KEY]: {
+        ...base(),
+        cycleConfig: validConfig,
+        periodLog: [{ start: '2026-07-18' }],
+      },
+    });
+    const storage = createOmahiStorage(area);
+    const state = await storage.saveCycleConfig({ cycleLength: 30 });
+    expect(state.cycleConfig?.cycleLength).toBe(30);
+    expect(state.periodLog).toEqual([{ start: '2026-07-18' }]);
+  });
+
+  it('toggleNewTab flips from the stored value each time', async () => {
+    const { area } = createFakeArea({ [STORAGE_KEY]: { ...base(), cycleConfig: validConfig } });
+    const storage = createOmahiStorage(area);
+    expect((await storage.toggleNewTab()).settings.newTabEnabled).toBe(true);
+    expect((await storage.toggleNewTab()).settings.newTabEnabled).toBe(false);
+    expect((await storage.load()).settings.newTabEnabled).toBe(false);
+  });
+
+  it('reset erases everything back to the empty state', async () => {
+    const { area } = createFakeArea({ [STORAGE_KEY]: validState() });
+    const storage = createOmahiStorage(area);
+    expect(await storage.reset()).toEqual(createEmptyState());
+    expect(await storage.load()).toEqual(createEmptyState());
+  });
+
+  it('saveCycleConfig rejects an out-of-range patch and writes nothing', async () => {
+    const { area, getSetCalls } = createFakeArea({
+      [STORAGE_KEY]: { ...base(), cycleConfig: validConfig },
+    });
+    const storage = createOmahiStorage(area);
+    await expect(storage.saveCycleConfig({ cycleLength: 5 })).rejects.toThrow(StorageSchemaError);
+    expect(getSetCalls()).toBe(0);
   });
 
   it('completeOnboarding persists config and settings in one write, preserving periodLog', async () => {

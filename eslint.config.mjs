@@ -14,6 +14,8 @@ export default tseslint.config(
       '**/dist/',
       'playwright-report/',
       'test-results/',
+      // Session-tooling scratch dir (not project code, self-gitignored).
+      '.remember/',
     ],
   },
   eslint.configs.recommended,

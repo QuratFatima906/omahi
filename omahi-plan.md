@@ -288,7 +288,7 @@ Each chunk = one standalone, independently testable PR.
 
 ---
 
-### Chunk 8 — Export / Import + Settings
+### Chunk 8 — Export / Import + Settings ✅ Done
 
 **Branch:** `feat/settings-export-import` · **PR:** `feat(extension): settings view with json export/import`
 **Scope:** Settings view: edit cycle config, export JSON (download), import JSON (file picker with validation), "delete all data".

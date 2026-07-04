@@ -4,11 +4,12 @@ import { PhaseCalendar } from '../../components/calendar/phase-calendar';
 import { Dashboard } from '../../components/dashboard/dashboard';
 import { Onboarding } from '../../components/onboarding/onboarding';
 import { PeriodLogView } from '../../components/period-log/period-log-view';
+import { SettingsView } from '../../components/settings/settings-view';
 import { formatLocalIso } from '../../lib/month-grid';
 import { effectiveCycleConfig } from '../../lib/period-log';
 import { omahiStorage, type OmahiState } from '../../lib/storage';
 
-type View = 'dashboard' | 'calendar' | 'log';
+type View = 'dashboard' | 'calendar' | 'log' | 'settings';
 
 function App() {
   // Runs the real storage layer (load → migrate → persist) on every open;
@@ -29,7 +30,24 @@ function App() {
       data-core={PHASES.join(' ')}
     >
       {state === null ? null : state.cycleConfig === null ? (
-        <Onboarding todayIso={formatLocalIso(new Date())} onComplete={setState} />
+        <Onboarding
+          todayIso={formatLocalIso(new Date())}
+          onComplete={(next) => {
+            setState(next);
+            setView('dashboard');
+          }}
+        />
+      ) : view === 'settings' ? (
+        <SettingsView
+          state={state}
+          todayIso={formatLocalIso(new Date())}
+          onBack={() => setView('dashboard')}
+          onStateChange={(next) => {
+            setState(next);
+            // Delete-all lands back on onboarding, not a stale settings view.
+            if (next.cycleConfig === null) setView('dashboard');
+          }}
+        />
       ) : view === 'log' ? (
         <PeriodLogView
           state={state}
@@ -50,6 +68,7 @@ function App() {
           config={effectiveCycleConfig(state)!}
           today={new Date()}
           onOpenCalendar={() => setView('calendar')}
+          onOpenSettings={() => setView('settings')}
           onLogPeriod={() => setView('log')}
         />
       )}
