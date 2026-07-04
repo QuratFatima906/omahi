@@ -38,6 +38,48 @@ export async function browserToday(page: Page): Promise<Date> {
   return new Date(year, month, day);
 }
 
+interface SeedAnchor {
+  /** Anchor N days before the browser's today. */
+  offsetDays?: number;
+  /** Anchor on this day of the browser's current month. */
+  dayOfMonth?: number;
+}
+
+/**
+ * Seed a completed-onboarding v2 state (28/5 cycle) and reload the popup.
+ * The anchor is computed from the BROWSER's clock — the same clock the app
+ * reads — so a test spanning local midnight can't shift the cycle day.
+ */
+export async function seedOnboarded(page: Page, extensionId: string, anchor: SeedAnchor) {
+  await page.goto(`chrome-extension://${extensionId}/popup.html`);
+  await page.evaluate(
+    ({ key, offsetDays, dayOfMonth }) => {
+      const now = new Date();
+      const anchorDay =
+        dayOfMonth === null
+          ? new Date(now.getFullYear(), now.getMonth(), now.getDate() - (offsetDays ?? 0))
+          : new Date(now.getFullYear(), now.getMonth(), dayOfMonth);
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const anchorDate = `${anchorDay.getFullYear()}-${pad(anchorDay.getMonth() + 1)}-${pad(anchorDay.getDate())}`;
+      return chrome.storage.local.set({
+        [key]: {
+          schemaVersion: 2,
+          cycleConfig: { anchorDate, cycleLength: 28, periodLength: 5 },
+          periodLog: [],
+          settings: { newTabEnabled: true },
+        },
+      });
+    },
+    {
+      key: STORAGE_KEY,
+      offsetDays: anchor.offsetDays ?? null,
+      dayOfMonth: anchor.dayOfMonth ?? null,
+    },
+  );
+  await page.reload();
+  await expect(page.locator('main')).toHaveAttribute('data-onboarded', 'true');
+}
+
 if (!existsSync(pathToExtension)) {
   throw new Error(`Built extension not found at ${pathToExtension} — run \`pnpm build\` first.`);
 }

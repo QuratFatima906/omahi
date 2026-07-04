@@ -21,6 +21,12 @@ export interface MonthGrid {
   cells: MonthCell[];
 }
 
+/**
+ * Sunday-first weekday headers. `getMonthGrid().leadingBlanks` assumes this
+ * order — a week-start change must update both together.
+ */
+export const WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] as const;
+
 const MONTH_NAMES = [
   'January',
   'February',
