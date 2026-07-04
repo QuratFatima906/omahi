@@ -23,15 +23,22 @@
   --color-ink-muted: #8a7078;
   --color-ink-faint: #b08d96;
   --color-ink-ghost: #c9aeb6;
+  /* Adjacent-month / disabled day numbers. */
+  --color-ink-disabled: #d9c8c1;
 
+  /* `deep` = text-on-tint variant; aliases the base where it's already dark enough. */
   --color-menstruation: #c74b6b;
   --color-menstruation-tint: #f3d2da;
+  --color-menstruation-deep: var(--color-menstruation);
   --color-follicular: #e8875b;
   --color-follicular-tint: #fae0cf;
+  --color-follicular-deep: #b85f33;
   --color-ovulation: #e3a94a;
   --color-ovulation-tint: #f7e6c6;
+  --color-ovulation-deep: #a87422;
   --color-luteal: #96588c;
   --color-luteal-tint: #e8d6e4;
+  --color-luteal-deep: var(--color-luteal);
 }
 
 @utility bg-brand-gradient {

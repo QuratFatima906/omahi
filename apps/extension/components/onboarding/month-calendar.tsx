@@ -5,6 +5,7 @@ import {
   isoYearMonth,
   monthOrdinal,
   shiftMonth,
+  WEEKDAYS,
 } from '../../lib/month-grid';
 
 interface MonthCalendarProps {
@@ -14,7 +15,7 @@ interface MonthCalendarProps {
   onSelect(iso: string): void;
 }
 
-const WEEKDAY_INITIALS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const WEEKDAY_INITIALS = WEEKDAYS.map((weekday) => weekday.charAt(0));
 
 export function MonthCalendar({ todayIso, selected, onSelect }: MonthCalendarProps) {
   const [view, setView] = useState(() => isoYearMonth(selected ?? todayIso));

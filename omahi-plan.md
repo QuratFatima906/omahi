@@ -262,7 +262,7 @@ Each chunk = one standalone, independently testable PR.
 
 ---
 
-### Chunk 6 — Phase Calendar
+### Chunk 6 — Phase Calendar ✅ Done
 
 **Branch:** `feat/phase-calendar` · **PR:** `feat(extension): month-view phase calendar`
 **Scope:** Month grid in popup (or popup tab), phase color-coding via `getForecast`, predicted period days marked, prev/next month navigation.

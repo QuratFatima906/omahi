@@ -1,32 +1,9 @@
 import type { Page } from '@playwright/test';
-import { expect, STORAGE_KEY, test } from './fixtures';
+import { expect, seedOnboarded, test } from './fixtures';
 
-/**
- * Seed a completed-onboarding state anchored `offsetDays` ago, then reload.
- * The anchor is computed from the BROWSER's clock — the same clock the popup
- * reads — so a test spanning local midnight can't shift the cycle day.
- */
+/** Seed a completed-onboarding state anchored `offsetDays` ago, then reload. */
 async function seedAnchor(page: Page, extensionId: string, offsetDays: number) {
-  await page.goto(`chrome-extension://${extensionId}/popup.html`);
-  await page.evaluate(
-    ([key, offset]) => {
-      const now = new Date();
-      const anchor = new Date(now.getFullYear(), now.getMonth(), now.getDate() - Number(offset));
-      const pad = (n: number) => String(n).padStart(2, '0');
-      const anchorDate = `${anchor.getFullYear()}-${pad(anchor.getMonth() + 1)}-${pad(anchor.getDate())}`;
-      return chrome.storage.local.set({
-        [key as string]: {
-          schemaVersion: 2,
-          cycleConfig: { anchorDate, cycleLength: 28, periodLength: 5 },
-          periodLog: [],
-          settings: { newTabEnabled: true },
-        },
-      });
-    },
-    [STORAGE_KEY, offsetDays] as const,
-  );
-  await page.reload();
-  await expect(page.locator('main')).toHaveAttribute('data-onboarded', 'true');
+  await seedOnboarded(page, extensionId, { offsetDays });
 }
 
 // Anchor offsets place "today" at a known cycle day for the 28/5 model:
