@@ -4,6 +4,34 @@
  */
 @import 'tailwindcss';
 
+/*
+ * Fonts: latin subsets only (English-only v1) — the bare @fontsource-variable
+ * imports shipped ~100 KB of cyrillic/vietnamese woff2 the UI never renders.
+ * Declarations mirror the package's own latin @font-face blocks.
+ */
+@font-face {
+  font-family: 'Quicksand Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 700;
+  src: url('../node_modules/@fontsource-variable/quicksand/files/quicksand-latin-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Nunito Sans Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 1000;
+  src: url('../node_modules/@fontsource-variable/nunito-sans/files/nunito-sans-latin-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 @theme {
   --font-display: 'Quicksand Variable', 'Quicksand', sans-serif;
   --font-sans: 'Nunito Sans Variable', 'Nunito Sans', sans-serif;
@@ -57,6 +85,12 @@ body {
   font-family: var(--font-sans);
   color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
+}
+
+/* Keyboard navigation: one visible, brand-colored focus ring everywhere. */
+:focus-visible {
+  outline: 2px solid var(--color-rose);
+  outline-offset: 2px;
 }
 
 /*
