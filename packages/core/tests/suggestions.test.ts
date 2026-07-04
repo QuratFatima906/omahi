@@ -39,6 +39,14 @@ describe('SUGGESTIONS_EN completeness', () => {
     }
   });
 
+  it.each(PHASES)('%s heroes contain no em-dash (they join a greeting with one)', (phase) => {
+    const content = SUGGESTIONS_EN[phase];
+    expect(content.hero).not.toContain('—');
+    for (const variant of content.dayVariants) {
+      expect(variant.hero ?? '').not.toContain('—');
+    }
+  });
+
   it('has a display label for every phase', () => {
     for (const phase of PHASES) {
       expect(PHASE_LABELS[phase].toLowerCase()).toBe(phase);

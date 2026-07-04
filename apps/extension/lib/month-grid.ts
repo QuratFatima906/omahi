@@ -61,6 +61,27 @@ export function formatHumanDate(iso: string): string {
   return `${MONTH_NAMES[month - 1]!.slice(0, 3)} ${Number(iso.slice(8, 10))}, ${year}`;
 }
 
+const WEEKDAY_NAMES = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+];
+
+/** A Date's local calendar day as "Saturday, July 5" (new-tab hero date line). */
+export function formatLongDate(date: Date): string {
+  return `${WEEKDAY_NAMES[date.getDay()]}, ${MONTH_NAMES[date.getMonth()]} ${date.getDate()}`;
+}
+
+/** `YYYY-MM-DD` → "Jul 22" (short, year-free). */
+export function formatShortDate(iso: string): string {
+  const { month } = isoYearMonth(iso);
+  return `${MONTH_NAMES[month - 1]!.slice(0, 3)} ${Number(iso.slice(8, 10))}`;
+}
+
 /** Comparable month ordinal: later months compare greater. */
 export function monthOrdinal(year: number, month: number): number {
   return year * 12 + (month - 1);
