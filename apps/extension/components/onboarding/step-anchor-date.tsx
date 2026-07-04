@@ -1,6 +1,6 @@
 import { ANCHOR_DATE_ERROR_MESSAGES, type AnchorDateError } from '../../lib/onboarding-form';
 import { PrimaryButton, SecondaryButton } from './buttons';
-import { MonthCalendar } from './month-calendar';
+import { MonthCalendar } from '../month-calendar';
 import { StepShell } from './step-shell';
 
 interface StepAnchorDateProps {

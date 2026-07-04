@@ -3,10 +3,12 @@ import { PHASES } from '@omahi/core';
 import { PhaseCalendar } from '../../components/calendar/phase-calendar';
 import { Dashboard } from '../../components/dashboard/dashboard';
 import { Onboarding } from '../../components/onboarding/onboarding';
+import { PeriodLogView } from '../../components/period-log/period-log-view';
 import { formatLocalIso } from '../../lib/month-grid';
+import { effectiveCycleConfig } from '../../lib/period-log';
 import { omahiStorage, type OmahiState } from '../../lib/storage';
 
-type View = 'dashboard' | 'calendar';
+type View = 'dashboard' | 'calendar' | 'log';
 
 function App() {
   // Runs the real storage layer (load → migrate → persist) on every open;
@@ -28,17 +30,27 @@ function App() {
     >
       {state === null ? null : state.cycleConfig === null ? (
         <Onboarding todayIso={formatLocalIso(new Date())} onComplete={setState} />
-      ) : view === 'calendar' ? (
-        <PhaseCalendar
-          config={state.cycleConfig}
+      ) : view === 'log' ? (
+        <PeriodLogView
+          state={state}
           todayIso={formatLocalIso(new Date())}
           onBack={() => setView('dashboard')}
+          onStateChange={setState}
+        />
+      ) : view === 'calendar' ? (
+        <PhaseCalendar
+          // Logged periods re-anchor predictions on every surface.
+          config={effectiveCycleConfig(state)!}
+          todayIso={formatLocalIso(new Date())}
+          onBack={() => setView('dashboard')}
+          onLogPeriod={() => setView('log')}
         />
       ) : (
         <Dashboard
-          config={state.cycleConfig}
+          config={effectiveCycleConfig(state)!}
           today={new Date()}
           onOpenCalendar={() => setView('calendar')}
+          onLogPeriod={() => setView('log')}
         />
       )}
     </main>

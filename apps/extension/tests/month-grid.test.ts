@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  formatHumanDate,
   formatIsoDate,
   formatLocalIso,
   getMonthGrid,
@@ -19,6 +20,11 @@ describe('formatIsoDate / formatLocalIso', () => {
     // Local-noon construction keeps the calendar day stable in any timezone.
     expect(formatLocalIso(new Date(2026, 0, 9, 12))).toBe('2026-01-09');
     expect(formatLocalIso(new Date(2026, 11, 31, 12))).toBe('2026-12-31');
+  });
+
+  it('formats an ISO date for display', () => {
+    expect(formatHumanDate('2026-07-04')).toBe('Jul 4, 2026');
+    expect(formatHumanDate('1999-12-31')).toBe('Dec 31, 1999');
   });
 });
 
