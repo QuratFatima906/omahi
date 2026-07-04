@@ -328,4 +328,49 @@ describe('createOmahiStorage', () => {
     ).rejects.toThrow(StorageSchemaError);
     expect(getSetCalls()).toBe(0);
   });
+
+  it('logPeriod appends and persists', async () => {
+    const { area } = createFakeArea({ [STORAGE_KEY]: { ...base(), cycleConfig: validConfig } });
+    const storage = createOmahiStorage(area);
+    const state = await storage.logPeriod('2026-07-18');
+    expect(state.periodLog).toEqual([{ start: '2026-07-18' }]);
+    const again = await storage.logPeriod('2026-08-15');
+    expect(again.periodLog).toEqual([{ start: '2026-07-18' }, { start: '2026-08-15' }]);
+    expect(await storage.load()).toEqual(again);
+  });
+
+  it('logPeriod is a no-op for an already-logged date', async () => {
+    const { area, getSetCalls } = createFakeArea({
+      [STORAGE_KEY]: { ...base(), periodLog: [{ start: '2026-07-18' }] },
+    });
+    const storage = createOmahiStorage(area);
+    const state = await storage.logPeriod('2026-07-18');
+    expect(state.periodLog).toEqual([{ start: '2026-07-18' }]);
+    expect(getSetCalls()).toBe(0);
+  });
+
+  it('logPeriod rejects an invalid date and writes nothing', async () => {
+    const { area, getSetCalls } = createFakeArea();
+    const storage = createOmahiStorage(area);
+    await expect(storage.logPeriod('2026-02-30')).rejects.toThrow(StorageSchemaError);
+    expect(getSetCalls()).toBe(0);
+  });
+
+  it('undoLastPeriod removes the most recent entry only', async () => {
+    const { area } = createFakeArea({
+      [STORAGE_KEY]: { ...base(), periodLog: [{ start: '2026-07-18' }, { start: '2026-08-15' }] },
+    });
+    const storage = createOmahiStorage(area);
+    const state = await storage.undoLastPeriod();
+    expect(state.periodLog).toEqual([{ start: '2026-07-18' }]);
+    expect(await storage.load()).toEqual(state);
+  });
+
+  it('undoLastPeriod is a no-op on an empty log', async () => {
+    const { area, getSetCalls } = createFakeArea({ [STORAGE_KEY]: base() });
+    const storage = createOmahiStorage(area);
+    const state = await storage.undoLastPeriod();
+    expect(state.periodLog).toEqual([]);
+    expect(getSetCalls()).toBe(0);
+  });
 });

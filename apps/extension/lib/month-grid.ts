@@ -55,6 +55,12 @@ export function formatLocalIso(date: Date): string {
   return formatIsoDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
 }
 
+/** `YYYY-MM-DD` → "Jul 4, 2026" for display. */
+export function formatHumanDate(iso: string): string {
+  const { year, month } = isoYearMonth(iso);
+  return `${MONTH_NAMES[month - 1]!.slice(0, 3)} ${Number(iso.slice(8, 10))}, ${year}`;
+}
+
 /** Comparable month ordinal: later months compare greater. */
 export function monthOrdinal(year: number, month: number): number {
   return year * 12 + (month - 1);

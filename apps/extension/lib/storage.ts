@@ -103,6 +103,9 @@ export function validateState(value: unknown): OmahiState {
   if (!Array.isArray(value.periodLog)) {
     throw new StorageSchemaError('state.periodLog must be an array');
   }
+  // Note: schema validation is deliberately clock-free (no "not in the
+  // future" rule here) — the calendar UI blocks future picks, and the JSON
+  // import flow (Chunk 8) is responsible for warning on future-dated data.
   for (const [index, entry] of value.periodLog.entries()) {
     if (!isRecord(entry) || typeof entry.start !== 'string' || parseIsoDate(entry.start) === null) {
       throw new StorageSchemaError(
@@ -210,6 +213,10 @@ export interface OmahiStorage {
   saveCycleConfig(config: CycleConfig): Promise<OmahiState>;
   /** Persist the onboarding result (config + settings) in one write. */
   completeOnboarding(config: CycleConfig, settings: OmahiSettings): Promise<OmahiState>;
+  /** Append a period start (`YYYY-MM-DD`). No-op if that date is already logged. */
+  logPeriod(start: string): Promise<OmahiState>;
+  /** Remove the most recently logged period. No-op on an empty log. */
+  undoLastPeriod(): Promise<OmahiState>;
 }
 
 export function createOmahiStorage(area: StorageAreaLike): OmahiStorage {
@@ -240,7 +247,13 @@ export function createOmahiStorage(area: StorageAreaLike): OmahiStorage {
     await area.set({ [STORAGE_KEY]: validateState(state) });
   }
 
-  /** Read-modify-write: load fresh (another surface may have written), patch, save. */
+  /**
+   * Read-modify-write: load fresh (another surface may have written), patch,
+   * save. NOT atomic — chrome.storage has no transactions, so two surfaces
+   * writing simultaneously last-write-wins. Acceptable while the popup is the
+   * only write surface; Chunk 9's new-tab page must stay read-only for cycle
+   * data (its settings toggle is the sole exception, edited from the popup).
+   */
   async function update(patch: Partial<OmahiState>): Promise<OmahiState> {
     const state = { ...(await load()), ...patch };
     await save(state);
@@ -253,6 +266,24 @@ export function createOmahiStorage(area: StorageAreaLike): OmahiStorage {
     saveCycleConfig: (config: CycleConfig) => update({ cycleConfig: config }),
     completeOnboarding: (config: CycleConfig, settings: OmahiSettings) =>
       update({ cycleConfig: config, settings }),
+    async logPeriod(start: string): Promise<OmahiState> {
+      const state = await load();
+      if (state.periodLog.some((entry) => entry.start === start)) {
+        return state;
+      }
+      const next = { ...state, periodLog: [...state.periodLog, { start }] };
+      await save(next);
+      return next;
+    },
+    async undoLastPeriod(): Promise<OmahiState> {
+      const state = await load();
+      if (state.periodLog.length === 0) {
+        return state;
+      }
+      const next = { ...state, periodLog: state.periodLog.slice(0, -1) };
+      await save(next);
+      return next;
+    },
   };
 }
 

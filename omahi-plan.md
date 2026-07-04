@@ -275,7 +275,7 @@ Each chunk = one standalone, independently testable PR.
 
 ---
 
-### Chunk 7 — Manual Override / Period Logging
+### Chunk 7 — Manual Override / Period Logging ✅ Done
 
 **Branch:** `feat/period-logging` · **PR:** `feat(extension): period logging and prediction re-anchoring`
 **Scope:** "Period started today/on date X" action → appends to `periodLog`, re-anchors predictions; history list; undo last entry.
@@ -292,6 +292,7 @@ Each chunk = one standalone, independently testable PR.
 
 **Branch:** `feat/settings-export-import` · **PR:** `feat(extension): settings view with json export/import`
 **Scope:** Settings view: edit cycle config, export JSON (download), import JSON (file picker with validation), "delete all data".
+**Anchor-precedence rule (decided in Chunk 7):** predictions use the LATEST of `cycleConfig.anchorDate` and all `periodLog` starts. So when settings saves a new "Last period started", it must also prune `periodLog` entries dated after the new anchor — otherwise the edit is silently overridden by a newer log entry.
 **Design:** `Popup settings` screen (§3) — grouped rows: "My cycle" (anchor date / cycle length / period length), "New tab" toggle, "My data" (export / import / delete-all), privacy + disclaimer footer with version.
 **Test plan:**
 

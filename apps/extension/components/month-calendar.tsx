@@ -6,7 +6,7 @@ import {
   monthOrdinal,
   shiftMonth,
   WEEKDAYS,
-} from '../../lib/month-grid';
+} from '../lib/month-grid';
 
 interface MonthCalendarProps {
   /** Local calendar today (`YYYY-MM-DD`); future days are not selectable. */
