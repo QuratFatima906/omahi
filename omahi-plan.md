@@ -302,7 +302,7 @@ Each chunk = one standalone, independently testable PR.
 
 ---
 
-### Chunk 9 — New-Tab Page
+### Chunk 9 — New-Tab Page ✅ Done
 
 **Branch:** `feat/newtab-page` · **PR:** `feat(extension): new-tab page with phase dashboard`
 **Scope:** `entrypoints/newtab/`: full-page layout reusing dashboard components (phase card, today's focus) plus date/greeting; settings toggle to enable/disable the new-tab override (default: ask during onboarding — collected in Chunk 3's step 3); dark variant via `prefers-color-scheme` (light default); graceful empty state if onboarding incomplete.

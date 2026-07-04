@@ -58,3 +58,47 @@ body {
   color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
 }
+
+/*
+ * New-tab surface: `data-surface` is stamped on <html> before React renders,
+ * so the background (and, in dark mode, every token) paints with the
+ * stylesheet — no white flash and no white overscroll edges.
+ */
+html[data-surface='newtab'],
+html[data-surface='newtab'] body {
+  background: var(--color-surface);
+}
+
+/*
+ * Dark theme — new-tab page only (the popup stays light per the design).
+ * Utilities resolve var(--color-*) at use sites, so overriding the tokens on
+ * the page root flips every surface inside it.
+ */
+@media (prefers-color-scheme: dark) {
+  [data-surface='newtab'] {
+    --color-coral: #ff9b7e;
+    --color-rose: #ed6b94;
+    --color-surface: #1d1519;
+    --color-card: #2a1f26;
+    --color-line: #40323a;
+    --color-hairline: #352a30;
+    --color-ink: #f8eee9;
+    --color-ink-soft: #a88d96;
+    --color-ink-muted: #a88d96;
+    --color-ink-faint: #8a7078;
+    --color-ink-ghost: #6e5560;
+    --color-ink-disabled: #574750;
+    --color-menstruation: #e76d8e;
+    --color-menstruation-tint: #4a2f38;
+    --color-follicular: #f09f73;
+    --color-follicular-tint: #4a3a2f;
+    --color-follicular-deep: var(--color-follicular);
+    --color-ovulation: #edbe66;
+    --color-ovulation-tint: #4a4230;
+    --color-ovulation-deep: var(--color-ovulation);
+    --color-luteal: #b57baa;
+    --color-luteal-tint: #40304a;
+    /* deep = text-on-tint; in dark the light phase colors fill that role
+       (menstruation/luteal deep already alias their base tokens). */
+  }
+}

@@ -3,6 +3,8 @@ import {
   formatHumanDate,
   formatIsoDate,
   formatLocalIso,
+  formatLongDate,
+  formatShortDate,
   getMonthGrid,
   isoMonthOrdinal,
   isoYearMonth,
@@ -25,6 +27,11 @@ describe('formatIsoDate / formatLocalIso', () => {
   it('formats an ISO date for display', () => {
     expect(formatHumanDate('2026-07-04')).toBe('Jul 4, 2026');
     expect(formatHumanDate('1999-12-31')).toBe('Dec 31, 1999');
+  });
+
+  it('formats short and long display dates', () => {
+    expect(formatShortDate('2026-07-22')).toBe('Jul 22');
+    expect(formatLongDate(new Date(2026, 6, 5, 12))).toBe('Sunday, July 5');
   });
 });
 
