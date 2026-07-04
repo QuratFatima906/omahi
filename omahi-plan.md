@@ -315,7 +315,7 @@ Each chunk = one standalone, independently testable PR.
 
 ---
 
-### Chunk 10 — Polish & Store Readiness
+### Chunk 10 — Polish & Store Readiness ✅ Done (store screenshots + promo tile remain manual)
 
 **Branch:** `chore/store-readiness` · **PR:** `chore: polish pass and chrome web store readiness`
 **Scope:** Omahi voice pass on all copy, icons/branding (O-as-moon), empty/error states, a11y pass (labels, contrast, keyboard), store listing assets, privacy policy page (trivial since local-only), package trim (bundle only latin font subsets — the bare `@fontsource-variable` imports ship ~100 KB of unused cyrillic/vietnamese woff2).
