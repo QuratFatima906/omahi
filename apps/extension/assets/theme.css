@@ -10,6 +10,8 @@
 
   --color-coral: #ff7e5f;
   --color-rose: #d64570;
+  /* Light accent used on gradient backgrounds (taglines, header icons). */
+  --color-blush: #ffe3d6;
 
   --color-surface: #fbf5f1;
   --color-card: #ffffff;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CycleConfigError, type CycleConfig } from '../src/cycle-config';
-import { getPhase, PHASES, type PhaseInfo } from '../src/phase-engine';
+import { getPhase, getPhaseLengths, PHASES, type PhaseInfo } from '../src/phase-engine';
 import {
   getDailySuggestion,
   getNextPhaseLine,
@@ -164,6 +164,33 @@ describe('getDailySuggestion', () => {
     expect(() => getDailySuggestion({ ...config, cycleLength: 5 }, day('2026-07-04'))).toThrow(
       CycleConfigError,
     );
+  });
+});
+
+describe('getPhaseLengths (segment source for the dashboard)', () => {
+  it('partitions the cycle for the default config', () => {
+    const lengths = getPhaseLengths(config);
+    expect(lengths).toEqual({ menstruation: 5, follicular: 7, ovulation: 3, luteal: 13 });
+  });
+
+  it('sums to cycleLength for every supported config', () => {
+    for (let cycleLength = 21; cycleLength <= 40; cycleLength += 1) {
+      for (const periodLength of [2, 5, 8]) {
+        const lengths = getPhaseLengths({ anchorDate: '2026-06-20', cycleLength, periodLength });
+        const total = Object.values(lengths).reduce((a, b) => a + b, 0);
+        expect(total).toBe(cycleLength);
+      }
+    }
+  });
+
+  it('reports an empty follicular phase as 0 days', () => {
+    expect(getPhaseLengths({ anchorDate: '2026-06-20', cycleLength: 21, periodLength: 8 })).toEqual(
+      { menstruation: 8, follicular: 0, ovulation: 1, luteal: 12 },
+    );
+  });
+
+  it('rejects an invalid config', () => {
+    expect(() => getPhaseLengths({ ...config, periodLength: 99 })).toThrow(CycleConfigError);
   });
 });
 

@@ -2,17 +2,6 @@ import { expect, STORAGE_KEY, test } from './fixtures';
 
 const config = { anchorDate: '2026-06-20', cycleLength: 28, periodLength: 5 };
 
-// Extension pages expose chrome.storage; the e2e tsconfig has no chrome types,
-// so declare the minimal surface these evaluate() callbacks use.
-declare const chrome: {
-  storage: {
-    local: {
-      set(items: Record<string, unknown>): Promise<void>;
-      get(key: string): Promise<Record<string, unknown>>;
-    };
-  };
-};
-
 test('popup runs the storage layer: migrates seeded v0 data and persists it', async ({
   context,
   extensionId,

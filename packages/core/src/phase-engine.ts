@@ -95,6 +95,18 @@ function phaseInfoAt(config: CycleConfig, anchorMs: number, utcMidnightMs: numbe
 }
 
 /**
+ * Days each phase spans in one cycle (an empty follicular phase yields 0).
+ * Sums to cycleLength. Throws CycleConfigError on an invalid config.
+ */
+export function getPhaseLengths(config: CycleConfig): Record<Phase, number> {
+  validateCycleConfig(config);
+  const ranges = getPhaseRanges(config);
+  return Object.fromEntries(
+    PHASES.map((phase) => [phase, Math.max(0, ranges[phase].end - ranges[phase].start + 1)]),
+  ) as Record<Phase, number>;
+}
+
+/**
  * Compute phase info for a calendar date. Dates before the anchor wrap
  * backwards into hypothetical earlier cycles; dates far after wrap forwards.
  * Throws CycleConfigError on an invalid config.

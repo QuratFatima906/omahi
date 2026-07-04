@@ -229,7 +229,7 @@ Each chunk = one standalone, independently testable PR.
 
 ---
 
-### Chunk 4 — Popup Dashboard
+### Chunk 4 — Popup Dashboard ✅ Done
 
 **Branch:** `feat/popup-dashboard` · **PR:** `feat(extension): phase-aware popup dashboard`
 **Scope:** Current phase card (name, cycle day, phase color), today's focus sections (work / food / workout / rest) from core `suggestions`, days-until-next-phase.
