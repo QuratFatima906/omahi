@@ -216,7 +216,7 @@ Each chunk = one standalone, independently testable PR.
 
 ---
 
-### Chunk 3 — Onboarding Flow
+### Chunk 3 — Onboarding Flow ✅ Done
 
 **Branch:** `feat/onboarding-flow` · **PR:** `feat(extension): first-run onboarding flow`
 **Scope:** Popup first-run: welcome screen + 3-step form (last period date → cycle length → period length), validation, Omahi-voice copy, medical disclaimer, writes config via Chunk 2. Step 3 includes the new-tab opt-in toggle (persist the preference now; Chunk 9 consumes it).
@@ -242,7 +242,7 @@ Each chunk = one standalone, independently testable PR.
 
 ---
 
-### Chunk 5 — Suggestions Content Module
+### Chunk 5 — Suggestions Content Module ✅ Done (built before Chunk 4, which consumes it)
 
 **Branch:** `feat/suggestions-content` · **PR:** `feat(core): per-phase suggestions content module`
 **Scope:** Structured content in core (`suggestions.ts`), keyed by **`phase + dayOfPhase`** (not just phase) so late-luteal ≠ early-luteal and the app feels different every day:
