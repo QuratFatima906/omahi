@@ -46,7 +46,7 @@ interface SeedAnchor {
 }
 
 /**
- * Seed a completed-onboarding v2 state (28/5 cycle) and reload the popup.
+ * Seed a completed-onboarding v3 state (28/5 cycle) and reload the popup.
  * The anchor is computed from the BROWSER's clock — the same clock the app
  * reads — so a test spanning local midnight can't shift the cycle day.
  */
@@ -63,10 +63,10 @@ export async function seedOnboarded(page: Page, extensionId: string, anchor: See
       const anchorDate = `${anchorDay.getFullYear()}-${pad(anchorDay.getMonth() + 1)}-${pad(anchorDay.getDate())}`;
       return chrome.storage.local.set({
         [key]: {
-          schemaVersion: 2,
+          schemaVersion: 3,
           cycleConfig: { anchorDate, cycleLength: 28, periodLength: 5 },
           periodLog: [],
-          settings: { newTabEnabled: true },
+          settings: { newTabEnabled: true, quietMode: false },
         },
       });
     },

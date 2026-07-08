@@ -51,13 +51,15 @@ test('full journey: onboard → dashboard → calendar → log → settings → 
 
   const stored = await page.evaluate((key) => chrome.storage.local.get(key), STORAGE_KEY);
   expect(stored[STORAGE_KEY]).toMatchObject({
-    schemaVersion: 2,
+    schemaVersion: 3,
     cycleConfig: { anchorDate: toIso(yesterday), cycleLength: 28, periodLength: 5 },
     periodLog: [],
-    settings: { newTabEnabled: true },
+    settings: { newTabEnabled: true, quietMode: false },
   });
 
-  // New tab: the same phase, full-page.
+  // New tab: neutral title by default; the phase shows only after the reveal tap.
   await page.goto(`chrome-extension://${extensionId}/newtab.html`);
-  await expect(page.getByText('Menstruation · Day 2 of 28')).toBeVisible();
+  await expect(page.getByText('Slow week')).toBeVisible();
+  await page.locator('[data-newtab="card-toggle"]').click();
+  await expect(page.locator('[data-newtab="detail"]').getByText('Day 2 of 28')).toBeVisible();
 });

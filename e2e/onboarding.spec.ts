@@ -57,10 +57,10 @@ test('happy path: onboarding writes config and reopening skips it', async ({
   await expect(page.getByText("Today's nudge")).toBeVisible();
 
   expect(await readState(page)).toEqual({
-    schemaVersion: 2,
+    schemaVersion: 3,
     cycleConfig: { anchorDate: toIso(month15thBefore(today)), cycleLength: 30, periodLength: 6 },
     periodLog: [],
-    settings: { newTabEnabled: true },
+    settings: { newTabEnabled: true, quietMode: false },
   });
 
   // Reopening the popup skips onboarding.
@@ -141,9 +141,9 @@ test('"Not sure" anchors to today; new-tab toggle can be declined', async ({
   await expect(page.locator('main')).toHaveAttribute('data-onboarded', 'true');
 
   expect(await readState(page)).toEqual({
-    schemaVersion: 2,
+    schemaVersion: 3,
     cycleConfig: { anchorDate: toIso(today), cycleLength: 28, periodLength: 5 },
     periodLog: [],
-    settings: { newTabEnabled: false },
+    settings: { newTabEnabled: false, quietMode: false },
   });
 });

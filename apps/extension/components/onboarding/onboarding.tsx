@@ -46,7 +46,7 @@ export function Onboarding({ todayIso, onComplete }: OnboardingProps) {
     try {
       const state = await omahiStorage.completeOnboarding(
         { anchorDate, cycleLength, periodLength },
-        { newTabEnabled },
+        { newTabEnabled, quietMode: false },
       );
       onComplete(state);
     } finally {

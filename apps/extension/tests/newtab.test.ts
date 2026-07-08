@@ -13,15 +13,30 @@ function at(iso: string): Date {
 
 describe('getNewTabModel', () => {
   it.each([
-    ['2026-06-21', 'menstruation', 2, 'Rest counts as progress today'],
-    ['2026-06-28', 'follicular', 9, 'Energy is climbing this week'],
-    ['2026-07-03', 'ovulation', 14, 'Peak energy · your best week'],
-    ['2026-07-16', 'luteal', 27, 'Period expected in ~2 days'],
-  ])('%s → %s day %i', (iso, phase, cycleDay, statusLine) => {
+    ['2026-06-21', 'menstruation', 2, 'Slow week', 'Rest counts as progress today'],
+    ['2026-06-28', 'follicular', 9, 'Fresh start', 'Energy is climbing this week'],
+    ['2026-07-03', 'ovulation', 14, 'Peak week', 'Peak energy · your best week'],
+    ['2026-07-16', 'luteal', 27, 'Focus week', 'Period expected in ~2 days'],
+  ])('%s → %s day %i titled "%s"', (iso, phase, cycleDay, title, statusLine) => {
     const model = getNewTabModel(config, at(iso));
-    expect(model).toMatchObject({ phase, cycleDay, cycleLength: 28, statusLine });
+    expect(model).toMatchObject({ phase, cycleDay, cycleLength: 28, title, statusLine });
+    expect(model.subtitle).not.toBe('');
     expect(model.tip).not.toBe('');
   });
+
+  // Privacy contract: the resting card renders only title/subtitle/tip, so
+  // none of them may contain cycle vocabulary or day counts. `statusLine` is
+  // exempt — it renders exclusively inside the tap-to-reveal detail chip.
+  it.each(['2026-06-21', '2026-06-28', '2026-07-03', '2026-07-16'])(
+    'always-visible copy on %s stays neutral',
+    (iso) => {
+      const identifying = /period|cycle|ovulat|menstru|luteal|follicular|day \d/i;
+      const model = getNewTabModel(config, at(iso));
+      expect(model.title).not.toMatch(identifying);
+      expect(model.subtitle).not.toMatch(identifying);
+      expect(model.tip).not.toMatch(identifying);
+    },
+  );
 
   it('fills the ring proportionally to the cycle day', () => {
     expect(getNewTabModel(config, at('2026-06-28')).ringFraction).toBeCloseTo(9 / 28);
