@@ -11,6 +11,12 @@ test('new tab renders the glass dashboard when enabled', async ({ context, exten
   await expect(page.getByText('Follicular · Day 9 of 28')).toBeVisible();
   await expect(page.getByText('Energy is climbing this week')).toBeVisible();
   await expect(page.getByText(/One thing for today:/)).toBeVisible();
+
+  const [popup] = await Promise.all([
+    context.waitForEvent('page'),
+    page.locator('[aria-label="Open Omahi"]').click(),
+  ]);
+  expect(popup.url()).toContain('popup.html');
 });
 
 test('chrome_url_overrides routes a fresh tab to the Omahi page', async ({

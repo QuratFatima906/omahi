@@ -57,7 +57,16 @@ function useNow(): Date {
       timer = setTimeout(tick, 60_000 - (Date.now() % 60_000));
     };
     timer = setTimeout(tick, 60_000 - (Date.now() % 60_000));
-    return () => clearTimeout(timer);
+    // A tab can idle for hours before being refocused; the minute-boundary
+    // timer alone would leave the clock stale for up to a minute after that.
+    const onVisible = () => {
+      if (!document.hidden) setNow(new Date());
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, []);
   return now;
 }
@@ -131,7 +140,7 @@ function NewTabDashboard({ state }: { state: OmahiState }) {
         </button>
       </div>
 
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-12 px-8">
+      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-12 px-8">
         <div className="flex flex-col items-center gap-1.5 text-center">
           <div className="text-[23px] font-medium text-ink/50">{getGreeting(now)}</div>
           <div
@@ -153,7 +162,7 @@ function NewTabDashboard({ state }: { state: OmahiState }) {
               <div className="text-[16px] text-ink/55">{model.statusLine}</div>
             </div>
           </div>
-          <div className="h-px bg-ink/10" />
+          <div className="h-px bg-ink/[0.08]" />
           <div className="text-[17px] leading-normal text-ink/75">
             <b className="font-semibold" style={{ color: tipAccent }}>
               One thing for today:
@@ -172,8 +181,9 @@ function App() {
     const reload = () => void omahiStorage.load().then(setState);
     reload();
     // New tabs are long-lived, unlike the popup: popup writes (log period,
-    // toggle off, delete-all) must reach already-open tabs, and refocusing a
-    // stale tab re-derives today's model (fresh state object → re-render).
+    // toggle off, delete-all) must reach already-open tabs via this storage
+    // reload, while refocusing a stale tab re-derives today's model through
+    // useNow's own visibilitychange refresh.
     browser.storage.onChanged.addListener(reload);
     const onVisible = () => {
       if (!document.hidden) reload();
