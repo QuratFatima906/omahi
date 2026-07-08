@@ -1,17 +1,15 @@
 import { expect, seedOnboarded, STORAGE_KEY, test } from './fixtures';
 
-test('new tab renders the phase dashboard when enabled', async ({ context, extensionId }) => {
+test('new tab renders the glass dashboard when enabled', async ({ context, extensionId }) => {
   const page = await context.newPage();
   // Follicular day 9; seedOnboarded enables the new-tab override.
   await seedOnboarded(page, extensionId, { offsetDays: 8 });
 
   await page.goto(`chrome-extension://${extensionId}/newtab.html`);
   await expect(page.locator('[data-newtab="dashboard"]')).toBeVisible();
-  await expect(page.getByText('Day 9 of 28')).toBeVisible();
-  await expect(page.getByText('Charging up')).toBeVisible();
-  await expect(
-    page.getByRole('heading', { name: 'Energy is climbing — good day to start things.' }),
-  ).toBeVisible();
+  await expect(page.locator('[data-newtab="clock"]')).toHaveText(/\d{1,2}[:.]\d{2}/);
+  await expect(page.getByText('Follicular · Day 9 of 28')).toBeVisible();
+  await expect(page.getByText('Energy is climbing this week')).toBeVisible();
   await expect(page.getByText(/One thing for today:/)).toBeVisible();
 });
 
