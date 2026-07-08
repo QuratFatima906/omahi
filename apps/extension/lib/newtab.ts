@@ -1,9 +1,10 @@
 /**
- * Pure view-model for the new-tab page: one glanceable state per phase —
- * cycle-ring progress, a battery-style energy read, one headline, one tip.
+ * Pure view-model for the new-tab page (Glass Board design): one frosted
+ * widget — cycle-ring progress, a per-phase status line, one tip — plus pure
+ * clock/greeting formatters so the component stays free of date logic.
  *
  * Copy is per-phase for now (finalized in the new-tab design handoff). If we
- * later author per-day copy, extend `getPhaseCopy` to key on `cycleDay` — the
+ * later author per-day copy, extend `PHASE_COPY` to key on `cycleDay` — the
  * component renders whatever this model returns.
  */
 
@@ -13,51 +14,42 @@ export interface NewTabModel {
   phase: Phase;
   cycleDay: number;
   cycleLength: number;
-  /** Ring sweep for the conic-gradient: (cycleDay / cycleLength) × 360, rounded. */
-  ringDeg: number;
-  /** Battery fill 0–100, a fixed per-phase energy read. */
-  batteryPct: number;
-  /** "Low battery", "Charging up" … */
-  batteryLabel: string;
-  headline: string;
-  /** Rendered after the "One thing for today:" lead-in. */
+  /** 0–1 cycle progress for the widget's SVG ring stroke. */
+  ringFraction: number;
+  /** Status line under the phase title inside the widget. */
+  statusLine: string;
   tip: string;
 }
 
 interface PhaseCopy {
-  batteryPct: number;
-  batteryLabel: string;
-  headline: (daysToPeriod: number) => string;
+  statusLine: (daysToPeriod: number) => string;
   tip: string;
 }
+
+/** The luteal status line switches to a period countdown this close to day 1. */
+const COUNTDOWN_WINDOW_DAYS = 7;
 
 // Copy is final per the design handoff: non-prescriptive, permission-framed —
 // never verdict language. Keep that register when editing.
 const PHASE_COPY: Record<Phase, PhaseCopy> = {
   menstruation: {
-    batteryPct: 15,
-    batteryLabel: 'Recharging',
-    headline: () => 'Rest counts as progress today.',
-    tip: 'keep the schedule light — cancel or move one thing if you can.',
+    statusLine: () => 'Rest counts as progress today',
+    tip: 'Keep the schedule light — cancel or move one thing if you can.',
   },
   follicular: {
-    batteryPct: 55,
-    batteryLabel: 'Charging up',
-    headline: () => 'Energy is climbing — good day to start things.',
-    tip: "open the project you've been putting off — starting feels easier this week.",
+    statusLine: () => 'Energy is climbing this week',
+    tip: "Open the project you've been putting off — starting feels easier this week.",
   },
   ovulation: {
-    batteryPct: 100,
-    batteryLabel: 'Full battery',
-    headline: () => 'Peak energy — this is your best week.',
-    tip: "schedule the hard conversation or big pitch — you'll land it best now.",
+    statusLine: () => 'Peak energy · your best week',
+    tip: "Schedule the hard conversation or big pitch — you'll land it best now.",
   },
   luteal: {
-    batteryPct: 22,
-    batteryLabel: 'Low battery',
-    headline: (daysToPeriod) =>
-      `Take it slow — your period starts in ~${daysToPeriod} ${daysToPeriod === 1 ? 'day' : 'days'}.`,
-    tip: 'clear the small stuff off your list — deep focus comes back next week.',
+    statusLine: (daysToPeriod) =>
+      daysToPeriod <= COUNTDOWN_WINDOW_DAYS
+        ? `Period expected in ~${daysToPeriod} ${daysToPeriod === 1 ? 'day' : 'days'}`
+        : 'Steady energy — good week to finish things',
+    tip: 'Clear the small stuff off your list — deep focus comes back next week.',
   },
 };
 
@@ -71,10 +63,38 @@ export function getNewTabModel(config: CycleConfig, today: Date): NewTabModel {
     phase: info.phase,
     cycleDay: info.cycleDay,
     cycleLength: config.cycleLength,
-    ringDeg: Math.round((info.cycleDay / config.cycleLength) * 360),
-    batteryPct: copy.batteryPct,
-    batteryLabel: copy.batteryLabel,
-    headline: copy.headline(daysToPeriod),
+    ringFraction: info.cycleDay / config.cycleLength,
+    statusLine: copy.statusLine(daysToPeriod),
     tip: copy.tip,
   };
+}
+
+export function getGreeting(date: Date): string {
+  const hour = date.getHours();
+  if (hour >= 5 && hour < 12) return 'Good morning';
+  if (hour >= 12 && hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
+/**
+ * Locale-aware wall-clock time without the day period — the greeting already
+ * says which half of the day it is (12h locales get "9:41", 24h get "14:15").
+ * `locale` is a test seam; production callers omit it (system locale).
+ */
+export function formatClock(date: Date, locale?: string): string {
+  return new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' })
+    .formatToParts(date)
+    .filter((part) => part.type !== 'dayPeriod')
+    .map((part) => part.value)
+    .join('')
+    .trim();
+}
+
+/** "Friday, July 10" (localized). `locale` is a test seam like formatClock's. */
+export function formatDateLine(date: Date, locale?: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  }).format(date);
 }

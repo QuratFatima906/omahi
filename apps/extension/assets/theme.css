@@ -46,8 +46,9 @@
   --color-line: #f0e2dc;
   --color-hairline: #f8eee9;
 
-  /* Unswept remainder of the new-tab cycle ring. */
-  --color-ring-track: #ede0ea;
+  /* Frosted new-tab widget surface + edge. */
+  --color-glass: rgba(255, 255, 255, 0.55);
+  --color-glass-border: rgba(255, 255, 255, 0.75);
 
   --color-ink: #2e2226;
   --color-ink-soft: #6e5560;
@@ -119,7 +120,8 @@ html[data-surface='newtab'] body {
     --color-card: #2a1f26;
     --color-line: #40323a;
     --color-hairline: #352a30;
-    --color-ring-track: #40323a;
+    --color-glass: rgba(38, 30, 42, 0.55);
+    --color-glass-border: rgba(255, 255, 255, 0.12);
     --color-ink: #f8eee9;
     --color-ink-soft: #a88d96;
     --color-ink-muted: #a88d96;

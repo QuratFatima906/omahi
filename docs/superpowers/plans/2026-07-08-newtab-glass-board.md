@@ -29,10 +29,12 @@ git commit -m "chore: polish pass follow-ups (icons, newtab, calendar)"
 ### Task 1: View-model — status lines, ring fraction, clock/greeting formatters
 
 **Files:**
+
 - Modify: `apps/extension/lib/newtab.ts` (full rewrite below)
 - Test: `apps/extension/tests/newtab.test.ts` (full rewrite below)
 
 **Interfaces:**
+
 - Consumes: `getPhase(config, today)` from `@omahi/core` (returns `{ phase, cycleDay, ... }`).
 - Produces (Task 2 imports all of these from `../../lib/newtab`):
   - `getNewTabModel(config: CycleConfig, today: Date): NewTabModel` where `NewTabModel = { phase: Phase; cycleDay: number; cycleLength: number; ringFraction: number; statusLine: string; tip: string }`
@@ -147,7 +149,6 @@ export interface NewTabModel {
   ringFraction: number;
   /** Status line under the phase title inside the widget. */
   statusLine: string;
-  /** Rendered after the "One thing for today:" lead-in. */
   tip: string;
 }
 
@@ -164,22 +165,22 @@ const COUNTDOWN_WINDOW_DAYS = 7;
 const PHASE_COPY: Record<Phase, PhaseCopy> = {
   menstruation: {
     statusLine: () => 'Rest counts as progress today',
-    tip: 'keep the schedule light — cancel or move one thing if you can.',
+    tip: 'Keep the schedule light — cancel or move one thing if you can.',
   },
   follicular: {
     statusLine: () => 'Energy is climbing this week',
-    tip: "open the project you've been putting off — starting feels easier this week.",
+    tip: "Open the project you've been putting off — starting feels easier this week.",
   },
   ovulation: {
     statusLine: () => 'Peak energy · your best week',
-    tip: "schedule the hard conversation or big pitch — you'll land it best now.",
+    tip: "Schedule the hard conversation or big pitch — you'll land it best now.",
   },
   luteal: {
     statusLine: (daysToPeriod) =>
       daysToPeriod <= COUNTDOWN_WINDOW_DAYS
         ? `Period expected in ~${daysToPeriod} ${daysToPeriod === 1 ? 'day' : 'days'}`
         : 'Steady energy — good week to finish things',
-    tip: 'clear the small stuff off your list — deep focus comes back next week.',
+    tip: 'Clear the small stuff off your list — deep focus comes back next week.',
   },
 };
 
@@ -247,10 +248,12 @@ git commit -m "feat(extension): glass-board view-model with status lines and clo
 ### Task 2: Glass tokens + component rewrite
 
 **Files:**
+
 - Modify: `apps/extension/assets/theme.css` (add glass tokens, drop `--color-ring-track`)
 - Modify: `apps/extension/entrypoints/newtab/app.tsx` (replace `NewTabDashboard`, add clock)
 
 **Interfaces:**
+
 - Consumes: everything from Task 1's Produces block; `PHASE_STYLE[phase].color/.deep` from `../../components/phase-style`; `GearIcon` from `../../components/icons`.
 - Produces: rendered markup with `data-newtab="dashboard"` (root) and `data-newtab="clock"` (time element) — Task 3's e2e selectors.
 
@@ -259,23 +262,23 @@ git commit -m "feat(extension): glass-board view-model with status lines and clo
 In `apps/extension/assets/theme.css`, inside the `@theme` block, replace:
 
 ```css
-  /* Unswept remainder of the new-tab cycle ring. */
-  --color-ring-track: #ede0ea;
+/* Unswept remainder of the new-tab cycle ring. */
+--color-ring-track: #ede0ea;
 ```
 
 with:
 
 ```css
-  /* Frosted new-tab widget surface + edge. */
-  --color-glass: rgba(255, 255, 255, 0.55);
-  --color-glass-border: rgba(255, 255, 255, 0.75);
+/* Frosted new-tab widget surface + edge. */
+--color-glass: rgba(255, 255, 255, 0.55);
+--color-glass-border: rgba(255, 255, 255, 0.75);
 ```
 
 In the `[data-surface='newtab']` dark block, replace the line `--color-ring-track: #40323a;` with:
 
 ```css
-    --color-glass: rgba(38, 30, 42, 0.55);
-    --color-glass-border: rgba(255, 255, 255, 0.12);
+--color-glass: rgba(38, 30, 42, 0.55);
+--color-glass-border: rgba(255, 255, 255, 0.12);
 ```
 
 - [ ] **Step 2: Rewrite the dashboard component**
@@ -297,9 +300,7 @@ Keep `Wordmark`, `DisabledState`, `SetupState`, and `App` exactly as they are, e
 
 ```tsx
 function Wordmark() {
-  return (
-    <span className="font-display text-2xl font-bold tracking-tight text-ink/35">omahi</span>
-  );
+  return <span className="font-display text-2xl font-bold tracking-tight text-ink/35">omahi</span>;
 }
 ```
 
@@ -417,12 +418,7 @@ function NewTabDashboard({ state }: { state: OmahiState }) {
             </div>
           </div>
           <div className="h-px bg-ink/10" />
-          <div className="text-[17px] leading-normal text-ink/75">
-            <b className="font-semibold" style={{ color: tipAccent }}>
-              One thing for today:
-            </b>{' '}
-            {model.tip}
-          </div>
+          <div className="text-[17px] leading-normal text-ink/75">{model.tip}</div>
         </div>
       </div>
     </div>
@@ -451,9 +447,11 @@ git commit -m "feat(extension): glass-board new-tab layout with live clock"
 ### Task 3: E2E update
 
 **Files:**
+
 - Modify: `e2e/newtab.spec.ts` (first test only)
 
 **Interfaces:**
+
 - Consumes: `data-newtab="dashboard"` / `data-newtab="clock"` markup from Task 2; `seedOnboarded` fixture (`offsetDays: 8` seeds follicular day 9).
 
 - [ ] **Step 1: Update the dashboard spec**
@@ -471,7 +469,6 @@ test('new tab renders the glass dashboard when enabled', async ({ context, exten
   await expect(page.locator('[data-newtab="clock"]')).toHaveText(/\d{1,2}[:.]\d{2}/);
   await expect(page.getByText('Follicular · Day 9 of 28')).toBeVisible();
   await expect(page.getByText('Energy is climbing this week')).toBeVisible();
-  await expect(page.getByText(/One thing for today:/)).toBeVisible();
 });
 ```
 
