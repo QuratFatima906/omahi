@@ -1,5 +1,6 @@
 import type { CycleConfig } from '@omahi/core';
 import { getDashboardModel } from '../../lib/dashboard';
+import { CalendarIcon, GearIcon } from '../icons';
 import { PHASE_STYLE } from '../phase-style';
 
 interface DashboardProps {
@@ -33,21 +34,21 @@ export function Dashboard({
     <div className="flex h-full flex-col bg-surface">
       <header className="bg-brand-gradient flex items-center justify-between px-5 py-4">
         <span className="font-display text-[19px] font-bold tracking-tight text-white">omahi</span>
-        <div className="flex items-center gap-3.5">
+        <div className="flex items-center gap-1">
           {(
             [
-              ['Calendar', '▦', onOpenCalendar],
-              ['Settings', '⚙', onOpenSettings],
+              ['Calendar', <CalendarIcon key="calendar" />, onOpenCalendar],
+              ['Settings', <GearIcon key="settings" />, onOpenSettings],
             ] as const
-          ).map(([label, glyph, onClick]) => (
+          ).map(([label, icon, onClick]) => (
             <button
               key={label}
               type="button"
               aria-label={label}
               onClick={onClick}
-              className="cursor-pointer text-[15px] text-blush"
+              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-blush hover:bg-white/15"
             >
-              {glyph}
+              {icon}
             </button>
           ))}
         </div>

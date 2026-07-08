@@ -24,12 +24,12 @@ export function MonthCalendar({ todayIso, selected, onSelect }: MonthCalendarPro
 
   return (
     <div className="mt-[22px] rounded-[14px] bg-surface p-4">
-      <div className="flex items-center justify-between px-1.5 pb-3 font-display text-sm font-bold">
+      <div className="flex items-center justify-between pb-2 font-display text-sm font-bold">
         <button
           type="button"
           aria-label="Previous month"
           onClick={() => setView(shiftMonth(view.year, view.month, -1))}
-          className="cursor-pointer px-1 text-ink-ghost"
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-[20px] font-normal text-ink-faint hover:bg-line"
         >
           ‹
         </button>
@@ -39,7 +39,7 @@ export function MonthCalendar({ todayIso, selected, onSelect }: MonthCalendarPro
           aria-label="Next month"
           disabled={atCurrentMonth}
           onClick={() => setView(shiftMonth(view.year, view.month, 1))}
-          className="cursor-pointer px-1 text-ink-ghost disabled:cursor-default disabled:opacity-40"
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-[20px] font-normal text-ink-faint hover:bg-line disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent"
         >
           ›
         </button>

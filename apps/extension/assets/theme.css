@@ -46,6 +46,9 @@
   --color-line: #f0e2dc;
   --color-hairline: #f8eee9;
 
+  /* Unswept remainder of the new-tab cycle ring. */
+  --color-ring-track: #ede0ea;
+
   --color-ink: #2e2226;
   --color-ink-soft: #6e5560;
   --color-ink-muted: #8a7078;
@@ -116,6 +119,7 @@ html[data-surface='newtab'] body {
     --color-card: #2a1f26;
     --color-line: #40323a;
     --color-hairline: #352a30;
+    --color-ring-track: #40323a;
     --color-ink: #f8eee9;
     --color-ink-soft: #a88d96;
     --color-ink-muted: #a88d96;

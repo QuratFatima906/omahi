@@ -28,7 +28,7 @@ export function PhaseCalendar({ config, todayIso, onBack, onLogPeriod }: PhaseCa
           type="button"
           aria-label="Back to dashboard"
           onClick={onBack}
-          className="cursor-pointer text-[17px] text-ink-faint"
+          className="-ml-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-[19px] text-ink-faint hover:bg-surface"
         >
           ←
         </button>
@@ -37,7 +37,7 @@ export function PhaseCalendar({ config, todayIso, onBack, onLogPeriod }: PhaseCa
           type="button"
           aria-label="Previous month"
           onClick={() => setView(shiftMonth(view.year, view.month, -1))}
-          className="cursor-pointer px-1 text-[15px] text-ink-faint"
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-[20px] text-ink-faint hover:bg-surface"
         >
           ‹
         </button>
@@ -46,7 +46,7 @@ export function PhaseCalendar({ config, todayIso, onBack, onLogPeriod }: PhaseCa
           type="button"
           aria-label="Next month"
           onClick={() => setView(shiftMonth(view.year, view.month, 1))}
-          className="cursor-pointer px-1 text-[15px] text-ink-faint"
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-[20px] text-ink-faint hover:bg-surface"
         >
           ›
         </button>

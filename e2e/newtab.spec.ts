@@ -7,14 +7,12 @@ test('new tab renders the phase dashboard when enabled', async ({ context, exten
 
   await page.goto(`chrome-extension://${extensionId}/newtab.html`);
   await expect(page.locator('[data-newtab="dashboard"]')).toBeVisible();
-  await expect(page.getByText('Follicular · Day 9 of 28')).toBeVisible();
+  await expect(page.getByText('Day 9 of 28')).toBeVisible();
+  await expect(page.getByText('Charging up')).toBeVisible();
   await expect(
-    page.getByRole('heading', { name: /^Good (morning|afternoon|evening) — / }),
+    page.getByRole('heading', { name: 'Energy is climbing — good day to start things.' }),
   ).toBeVisible();
-  for (const label of ['Work', 'Food', 'Move', 'Rest']) {
-    await expect(page.getByText(label, { exact: true })).toBeVisible();
-  }
-  await expect(page.getByText(/next period · /)).toBeVisible();
+  await expect(page.getByText(/One thing for today:/)).toBeVisible();
 });
 
 test('chrome_url_overrides routes a fresh tab to the Omahi page', async ({

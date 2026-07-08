@@ -153,7 +153,7 @@ export function SettingsView({ state, todayIso, onBack, onStateChange }: Setting
           type="button"
           aria-label="Back"
           onClick={onBack}
-          className="cursor-pointer text-[17px] text-ink-faint"
+          className="-ml-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-[19px] text-ink-faint hover:bg-surface"
         >
           ←
         </button>

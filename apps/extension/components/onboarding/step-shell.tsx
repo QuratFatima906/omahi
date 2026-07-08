@@ -31,7 +31,7 @@ export function StepShell({ step, title, subtitle, footer, children }: StepShell
       </div>
       {children}
       <div className="flex-1" />
-      <div className="flex gap-3">{footer}</div>
+      <div className="mt-5 flex gap-3">{footer}</div>
     </div>
   );
 }
