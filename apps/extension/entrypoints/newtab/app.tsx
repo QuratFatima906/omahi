@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { browser } from 'wxt/browser';
+import { CycleRing } from '../../components/cycle-ring';
 import { GearIcon } from '../../components/icons';
 import { PrimaryButton } from '../../components/onboarding/buttons';
 import { PHASE_STYLE } from '../../components/phase-style';
@@ -9,11 +10,60 @@ import { omahiStorage, type OmahiState } from '../../lib/storage';
 
 /**
  * The new-tab page is READ-ONLY over storage (see the concurrency note in
- * lib/storage.ts) — every write happens in the popup.
+ * lib/storage.ts) — every write happens in the popup app. The gear opens
+ * that app as an in-page dialog (popup.html in an iframe), so the popup
+ * remains the only write surface even when opened from here.
  */
 
 function Wordmark() {
   return <span className="font-display text-2xl font-bold tracking-tight text-ink/35">omahi</span>;
+}
+
+/** Modal overlay hosting the popup app on the same tab. */
+function AppOverlay({ onClose }: { onClose: () => void }) {
+  const closeButton = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    closeButton.current?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    // Fixed scrim (not a theme token): it must darken the page in both themes.
+    <div
+      data-newtab="overlay"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(20,12,18,0.45)] backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Omahi"
+        className="relative"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button
+          ref={closeButton}
+          type="button"
+          aria-label="Close Omahi"
+          onClick={onClose}
+          className="absolute -top-3.5 -right-3.5 z-10 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-card text-[15px] text-ink-soft shadow-[0_4px_16px_rgba(0,0,0,0.25)] hover:text-ink"
+        >
+          ✕
+        </button>
+        <div className="overflow-hidden rounded-3xl shadow-[0_24px_64px_rgba(0,0,0,0.35)]">
+          <iframe
+            src={browser.runtime.getURL('/popup.html')}
+            title="Omahi"
+            className="block h-[min(560px,90dvh)] w-[min(380px,92dvw)] border-0"
+          />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 /** Quiet fallback when the user turned the override off in settings. */
@@ -28,17 +78,14 @@ function DisabledState() {
 }
 
 /** Graceful empty state when onboarding hasn't happened yet. */
-function SetupState() {
+function SetupState({ onOpenApp }: { onOpenApp: () => void }) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-surface p-8 text-center">
       <Wordmark />
       <p className="max-w-sm text-[15px] leading-relaxed text-ink-soft" data-newtab="setup">
         Three quick questions and this page becomes your cycle-aware plan for the day.
       </p>
-      <PrimaryButton
-        onClick={() => void browser.tabs.create({ url: browser.runtime.getURL('/popup.html') })}
-        className="mt-2 px-9"
-      >
+      <PrimaryButton onClick={onOpenApp} className="mt-2 px-9">
         Get started
       </PrimaryButton>
     </div>
@@ -69,36 +116,7 @@ function useNow(): Date {
   return now;
 }
 
-const RING_RADIUS = 20.5;
-const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
-
-function CycleRing({ fraction, color }: { fraction: number; color: string }) {
-  return (
-    <svg width="50" height="50" viewBox="0 0 50 50" aria-hidden="true" className="shrink-0">
-      <circle
-        cx="25"
-        cy="25"
-        r={RING_RADIUS}
-        fill="none"
-        stroke="color-mix(in srgb, var(--color-ink) 10%, transparent)"
-        strokeWidth="3.5"
-      />
-      <circle
-        cx="25"
-        cy="25"
-        r={RING_RADIUS}
-        fill="none"
-        stroke={color}
-        strokeWidth="3.5"
-        strokeLinecap="round"
-        strokeDasharray={`${fraction * RING_CIRCUMFERENCE} ${RING_CIRCUMFERENCE}`}
-        transform="rotate(-90 25 25)"
-      />
-    </svg>
-  );
-}
-
-function NewTabDashboard({ state }: { state: OmahiState }) {
+function NewTabDashboard({ state, onOpenApp }: { state: OmahiState; onOpenApp: () => void }) {
   const now = useNow();
   const model = getNewTabModel(effectiveCycleConfig(state)!, now);
   const { color } = PHASE_STYLE[model.phase];
@@ -128,7 +146,7 @@ function NewTabDashboard({ state }: { state: OmahiState }) {
         <button
           type="button"
           aria-label="Open Omahi"
-          onClick={() => void browser.tabs.create({ url: browser.runtime.getURL('/popup.html') })}
+          onClick={onOpenApp}
           className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-ink/25 hover:bg-ink/5 hover:text-ink/45"
         >
           <GearIcon size={22} />
@@ -167,6 +185,8 @@ function NewTabDashboard({ state }: { state: OmahiState }) {
 
 function App() {
   const [state, setState] = useState<OmahiState | null>(null);
+  const [appOpen, setAppOpen] = useState(false);
+  const openApp = () => setAppOpen(true);
   useEffect(() => {
     const reload = () => void omahiStorage.load().then(setState);
     reload();
@@ -195,12 +215,13 @@ function App() {
       ) : state.cycleConfig === null ? (
         // Pre-onboarding the toggle is still at its default — invite setup
         // instead of claiming the user turned anything off.
-        <SetupState />
+        <SetupState onOpenApp={openApp} />
       ) : !state.settings.newTabEnabled ? (
         <DisabledState />
       ) : (
-        <NewTabDashboard state={state} />
+        <NewTabDashboard state={state} onOpenApp={openApp} />
       )}
+      {appOpen && <AppOverlay onClose={() => setAppOpen(false)} />}
     </main>
   );
 }

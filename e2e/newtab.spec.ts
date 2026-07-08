@@ -11,11 +11,20 @@ test('new tab renders the glass dashboard when enabled', async ({ context, exten
   await expect(page.getByText('Follicular · Day 9 of 28')).toBeVisible();
   await expect(page.getByText('Energy is climbing this week')).toBeVisible();
 
-  const [popup] = await Promise.all([
-    context.waitForEvent('page'),
-    page.locator('[aria-label="Open Omahi"]').click(),
-  ]);
-  expect(popup.url()).toContain('popup.html');
+  // The gear opens the popup app as a dialog on the SAME tab (iframe overlay).
+  const pagesBefore = context.pages().length;
+  await page.locator('[aria-label="Open Omahi"]').click();
+  const overlay = page.locator('[data-newtab="overlay"]');
+  await expect(overlay).toBeVisible();
+  await expect(overlay.locator('iframe')).toHaveAttribute('src', /popup\.html/);
+  expect(context.pages().length).toBe(pagesBefore);
+
+  // The embedded app is the real popup — its dashboard renders inside.
+  const app = page.frameLocator('[data-newtab="overlay"] iframe');
+  await expect(app.getByText('Big-idea energy')).toBeVisible();
+
+  await page.keyboard.press('Escape');
+  await expect(overlay).toBeHidden();
 });
 
 test('chrome_url_overrides routes a fresh tab to the Omahi page', async ({
