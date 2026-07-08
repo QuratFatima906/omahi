@@ -28,6 +28,7 @@ describe('getDashboardModel', () => {
     expect(model.hero).toBe('Big-idea energy');
     expect(model.work).toBe('Momentum is real now — block a deep-work morning.');
     expect(model.nextLine).toBe('Ovulation window opens in 4 days');
+    expect(model.ringFraction).toBe(9 / 28);
   });
 
   it('renders ovulation and luteal days', () => {

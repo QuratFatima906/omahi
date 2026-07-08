@@ -26,6 +26,8 @@ export interface DashboardModel extends DailySuggestion {
   phaseLabel: string;
   nextLine: string;
   segments: PhaseSegment[];
+  /** Progress through the whole cycle (0–1] — drives the hero ring. */
+  ringFraction: number;
 }
 
 export function getDashboardModel(config: CycleConfig, today: Date): DashboardModel {
@@ -35,6 +37,7 @@ export function getDashboardModel(config: CycleConfig, today: Date): DashboardMo
     ...suggestion,
     phaseLabel: PHASE_LABELS[suggestion.phase],
     nextLine: getNextPhaseLine(suggestion),
+    ringFraction: suggestion.cycleDay / config.cycleLength,
     segments: PHASES.filter((phase) => lengths[phase] > 0).map((phase) => ({
       phase,
       length: lengths[phase],

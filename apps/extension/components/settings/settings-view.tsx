@@ -14,7 +14,9 @@ import {
   StorageSchemaError,
   type OmahiState,
 } from '../../lib/storage';
+import { ambient, GlassScreen } from '../glass-screen';
 import { MonthCalendar } from '../month-calendar';
+import { PHASE_STYLE } from '../phase-style';
 import { ToggleSwitch } from '../toggle-switch';
 
 interface SettingsViewProps {
@@ -30,7 +32,7 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
       <div className="mb-2 text-[11.5px] font-extrabold tracking-[0.14em] text-ink-faint uppercase">
         {title}
       </div>
-      <div className="overflow-hidden rounded-[14px] bg-card shadow-[0_2px_8px_rgba(46,34,38,0.05)]">
+      <div className="overflow-hidden rounded-[16px] border border-glass-border bg-glass-soft backdrop-blur-[20px] backdrop-saturate-150">
         {children}
       </div>
     </div>
@@ -39,7 +41,7 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
 
 function Row({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-center justify-between border-b border-hairline px-4 py-3 last:border-b-0">
+    <div className="flex items-center justify-between border-b border-ink/[0.08] px-4 py-3 last:border-b-0">
       {children}
     </div>
   );
@@ -60,8 +62,8 @@ function Stepper({
   onChange: (value: number) => void;
 }) {
   const stepButton =
-    'flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-[1.5px] ' +
-    'border-line text-[15px] text-ink-faint disabled:cursor-default disabled:opacity-40';
+    'flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border ' +
+    'border-glass-border bg-glass-soft text-[15px] text-ink-faint disabled:cursor-default disabled:opacity-40';
   return (
     <div className="flex items-center gap-2.5">
       <button
@@ -147,20 +149,20 @@ export function SettingsView({ state, todayIso, onBack, onStateChange }: Setting
   }
 
   return (
-    <div className="flex h-full flex-col bg-surface">
-      <header className="flex items-center gap-3.5 border-b border-line bg-card px-5 py-3.5">
+    <GlassScreen glow={[ambient('var(--color-rose)', 22), ambient(PHASE_STYLE.luteal.color, 20)]}>
+      <header className="flex items-center gap-3 px-5 pt-4 pb-1">
         <button
           type="button"
           aria-label="Back"
           onClick={onBack}
-          className="-ml-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-[19px] text-ink-faint hover:bg-surface"
+          className="-ml-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-[19px] text-ink-faint hover:bg-ink/5"
         >
           ←
         </button>
         <h1 className="font-display text-base font-bold">Settings</h1>
       </header>
 
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 pt-[18px] pb-5">
+      <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 pt-3 pb-5">
         <Group title="My cycle">
           <Row>
             <span className="text-[13.5px]">Last period started</span>
@@ -174,7 +176,7 @@ export function SettingsView({ state, todayIso, onBack, onStateChange }: Setting
             </button>
           </Row>
           {anchorOpen && (
-            <div className="border-b border-hairline px-3 pb-3">
+            <div className="border-b border-ink/[0.08] px-3 pb-3">
               <MonthCalendar
                 todayIso={todayIso}
                 selected={config.anchorDate}
@@ -258,7 +260,7 @@ export function SettingsView({ state, todayIso, onBack, onStateChange }: Setting
             <button
               type="button"
               onClick={() => void deleteAll()}
-              className="cursor-pointer text-[13.5px] font-bold text-[#c0574f]"
+              className="cursor-pointer text-[13.5px] font-bold text-danger"
             >
               {confirmingDelete ? 'Tap again to delete everything' : 'Delete all data…'}
             </button>
@@ -279,6 +281,6 @@ export function SettingsView({ state, todayIso, onBack, onStateChange }: Setting
           omahi v{browser.runtime.getManifest().version} · made with love
         </p>
       </div>
-    </div>
+    </GlassScreen>
   );
 }

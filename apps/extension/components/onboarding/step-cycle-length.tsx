@@ -11,8 +11,8 @@ interface StepCycleLengthProps {
 }
 
 const stepperClasses =
-  'flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border-[1.5px] ' +
-  'border-line text-[22px] text-ink-faint disabled:cursor-default disabled:opacity-40';
+  'flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border ' +
+  'border-glass-border bg-glass-soft text-[22px] text-ink-soft disabled:cursor-default disabled:opacity-40';
 
 export function StepCycleLength({ value, onChange, onBack, onContinue }: StepCycleLengthProps) {
   return (
@@ -31,7 +31,7 @@ export function StepCycleLength({ value, onChange, onBack, onContinue }: StepCyc
         </>
       }
     >
-      <div className="mt-10 flex flex-col items-center gap-[22px]">
+      <div className="mt-8 flex flex-col items-center gap-[22px] rounded-[20px] border border-glass-border bg-glass px-[22px] py-[26px] backdrop-blur-[20px] backdrop-saturate-150">
         <div className="flex items-center gap-[26px]">
           <button
             type="button"
@@ -43,9 +43,7 @@ export function StepCycleLength({ value, onChange, onBack, onContinue }: StepCyc
             −
           </button>
           <div className="text-center">
-            <div className="text-brand-gradient font-display text-[64px] leading-none font-bold">
-              {value}
-            </div>
+            <div className="text-[64px] leading-none font-light">{value}</div>
             <div className="mt-1.5 text-[13px] font-bold text-ink-faint">days</div>
           </div>
           <button
@@ -58,7 +56,7 @@ export function StepCycleLength({ value, onChange, onBack, onContinue }: StepCyc
             +
           </button>
         </div>
-        <div className="w-full px-2">
+        <div className="w-full px-1">
           <input
             type="range"
             aria-label="Cycle length in days"
@@ -73,10 +71,10 @@ export function StepCycleLength({ value, onChange, onBack, onContinue }: StepCyc
             <span>{MAX_CYCLE_LENGTH}</span>
           </div>
         </div>
-        <p className="rounded-[10px] bg-surface px-3.5 py-2.5 text-center text-[12.5px] leading-relaxed text-ink-faint">
-          Not sure? Leave it at {DEFAULT_CYCLE_LENGTH} — Omahi learns as you log real periods.
-        </p>
       </div>
+      <p className="mt-4 text-center text-[12.5px] leading-relaxed text-ink-muted">
+        Not sure? Leave it at {DEFAULT_CYCLE_LENGTH} — Omahi learns as you log real periods.
+      </p>
     </StepShell>
   );
 }

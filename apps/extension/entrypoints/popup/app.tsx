@@ -22,8 +22,11 @@ function App() {
 
   return (
     // The popup's fixed 380×560 frame is set once here; screens fill it with h-full.
+    // The frame tracks the live viewport (the document's intrinsic size only
+    // tells Chrome how big to open the popup window — see theme.css), so
+    // zoomed popups and full-tab views reflow instead of clipping.
     <main
-      className="h-[560px] w-[380px] bg-card"
+      className="h-dvh w-dvw overflow-hidden bg-field"
       data-storage={state ? `v${state.schemaVersion}` : 'loading'}
       data-onboarded={state ? String(state.cycleConfig !== null) : 'unknown'}
       // Imports core so the workspace wiring is exercised end-to-end.

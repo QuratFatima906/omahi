@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { PrimaryButton, SecondaryButton } from '../onboarding/buttons';
 import { formatHumanDate } from '../../lib/month-grid';
 import { omahiStorage, type OmahiState } from '../../lib/storage';
+import { ambient, GlassScreen } from '../glass-screen';
 import { MonthCalendar } from '../month-calendar';
+import { PHASE_STYLE } from '../phase-style';
 
 interface PeriodLogViewProps {
   state: OmahiState;
@@ -50,20 +52,22 @@ export function PeriodLogView({ state, todayIso, onBack, onStateChange }: Period
   }
 
   return (
-    <div className="flex h-full flex-col bg-surface">
-      <header className="flex items-center gap-3.5 border-b border-line bg-card px-5 py-3.5">
+    <GlassScreen
+      glow={[ambient(PHASE_STYLE.menstruation.color, 26), ambient('var(--color-rose)', 20)]}
+    >
+      <header className="flex items-center gap-3 px-5 pt-4 pb-1">
         <button
           type="button"
           aria-label="Back"
           onClick={onBack}
-          className="cursor-pointer text-[17px] text-ink-faint"
+          className="-ml-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-[19px] text-ink-faint hover:bg-ink/5"
         >
           ←
         </button>
         <h1 className="font-display text-base font-bold">Log period</h1>
       </header>
 
-      <div className="flex flex-1 flex-col overflow-y-auto px-6 pt-4 pb-5">
+      <div className="flex flex-1 flex-col overflow-y-auto px-6 pt-3 pb-5">
         <p className="text-[13.5px] leading-relaxed text-ink-muted">
           When did this period start? Omahi re-anchors your predictions around it.
         </p>
@@ -92,11 +96,11 @@ export function PeriodLogView({ state, todayIso, onBack, onStateChange }: Period
             <div className="mb-2 text-[11.5px] font-extrabold tracking-[0.14em] text-ink-faint uppercase">
               Logged periods
             </div>
-            <ul className="overflow-hidden rounded-[14px] bg-card">
+            <ul className="overflow-hidden rounded-[16px] border border-glass-border bg-glass-soft backdrop-blur-[20px] backdrop-saturate-150">
               {history.map((entry) => (
                 <li
                   key={entry.start}
-                  className="border-b border-hairline px-4 py-3 text-[13.5px] last:border-b-0"
+                  className="border-b border-ink/[0.08] px-4 py-3 text-[13.5px] last:border-b-0"
                 >
                   Started {formatHumanDate(entry.start)}
                 </li>
@@ -113,6 +117,6 @@ export function PeriodLogView({ state, todayIso, onBack, onStateChange }: Period
           </div>
         )}
       </div>
-    </div>
+    </GlassScreen>
   );
 }
