@@ -216,7 +216,7 @@ Each chunk = one standalone, independently testable PR.
 
 ---
 
-### Chunk 3 — Onboarding Flow
+### Chunk 3 — Onboarding Flow ✅ Done
 
 **Branch:** `feat/onboarding-flow` · **PR:** `feat(extension): first-run onboarding flow`
 **Scope:** Popup first-run: welcome screen + 3-step form (last period date → cycle length → period length), validation, Omahi-voice copy, medical disclaimer, writes config via Chunk 2. Step 3 includes the new-tab opt-in toggle (persist the preference now; Chunk 9 consumes it).
@@ -229,7 +229,7 @@ Each chunk = one standalone, independently testable PR.
 
 ---
 
-### Chunk 4 — Popup Dashboard
+### Chunk 4 — Popup Dashboard ✅ Done
 
 **Branch:** `feat/popup-dashboard` · **PR:** `feat(extension): phase-aware popup dashboard`
 **Scope:** Current phase card (name, cycle day, phase color), today's focus sections (work / food / workout / rest) from core `suggestions`, days-until-next-phase.
@@ -242,7 +242,7 @@ Each chunk = one standalone, independently testable PR.
 
 ---
 
-### Chunk 5 — Suggestions Content Module
+### Chunk 5 — Suggestions Content Module ✅ Done (built before Chunk 4, which consumes it)
 
 **Branch:** `feat/suggestions-content` · **PR:** `feat(core): per-phase suggestions content module`
 **Scope:** Structured content in core (`suggestions.ts`), keyed by **`phase + dayOfPhase`** (not just phase) so late-luteal ≠ early-luteal and the app feels different every day:
@@ -262,7 +262,7 @@ Each chunk = one standalone, independently testable PR.
 
 ---
 
-### Chunk 6 — Phase Calendar
+### Chunk 6 — Phase Calendar ✅ Done
 
 **Branch:** `feat/phase-calendar` · **PR:** `feat(extension): month-view phase calendar`
 **Scope:** Month grid in popup (or popup tab), phase color-coding via `getForecast`, predicted period days marked, prev/next month navigation.
@@ -275,7 +275,7 @@ Each chunk = one standalone, independently testable PR.
 
 ---
 
-### Chunk 7 — Manual Override / Period Logging
+### Chunk 7 — Manual Override / Period Logging ✅ Done
 
 **Branch:** `feat/period-logging` · **PR:** `feat(extension): period logging and prediction re-anchoring`
 **Scope:** "Period started today/on date X" action → appends to `periodLog`, re-anchors predictions; history list; undo last entry.
@@ -288,10 +288,11 @@ Each chunk = one standalone, independently testable PR.
 
 ---
 
-### Chunk 8 — Export / Import + Settings
+### Chunk 8 — Export / Import + Settings ✅ Done
 
 **Branch:** `feat/settings-export-import` · **PR:** `feat(extension): settings view with json export/import`
 **Scope:** Settings view: edit cycle config, export JSON (download), import JSON (file picker with validation), "delete all data".
+**Anchor-precedence rule (decided in Chunk 7):** predictions use the LATEST of `cycleConfig.anchorDate` and all `periodLog` starts. So when settings saves a new "Last period started", it must also prune `periodLog` entries dated after the new anchor — otherwise the edit is silently overridden by a newer log entry.
 **Design:** `Popup settings` screen (§3) — grouped rows: "My cycle" (anchor date / cycle length / period length), "New tab" toggle, "My data" (export / import / delete-all), privacy + disclaimer footer with version.
 **Test plan:**
 
@@ -301,7 +302,7 @@ Each chunk = one standalone, independently testable PR.
 
 ---
 
-### Chunk 9 — New-Tab Page
+### Chunk 9 — New-Tab Page ✅ Done
 
 **Branch:** `feat/newtab-page` · **PR:** `feat(extension): new-tab page with phase dashboard`
 **Scope:** `entrypoints/newtab/`: full-page layout reusing dashboard components (phase card, today's focus) plus date/greeting; settings toggle to enable/disable the new-tab override (default: ask during onboarding — collected in Chunk 3's step 3); dark variant via `prefers-color-scheme` (light default); graceful empty state if onboarding incomplete.
@@ -314,7 +315,7 @@ Each chunk = one standalone, independently testable PR.
 
 ---
 
-### Chunk 10 — Polish & Store Readiness
+### Chunk 10 — Polish & Store Readiness ✅ Done (store screenshots + promo tile remain manual)
 
 **Branch:** `chore/store-readiness` · **PR:** `chore: polish pass and chrome web store readiness`
 **Scope:** Omahi voice pass on all copy, icons/branding (O-as-moon), empty/error states, a11y pass (labels, contrast, keyboard), store listing assets, privacy policy page (trivial since local-only), package trim (bundle only latin font subsets — the bare `@fontsource-variable` imports ship ~100 KB of unused cyrillic/vietnamese woff2).

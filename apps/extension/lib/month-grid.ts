@@ -21,6 +21,12 @@ export interface MonthGrid {
   cells: MonthCell[];
 }
 
+/**
+ * Sunday-first weekday headers. `getMonthGrid().leadingBlanks` assumes this
+ * order — a week-start change must update both together.
+ */
+export const WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] as const;
+
 const MONTH_NAMES = [
   'January',
   'February',
@@ -47,6 +53,33 @@ export function formatIsoDate(year: number, month: number, day: number): string 
 /** A `Date`'s local calendar day as `YYYY-MM-DD` (what the user sees as "today"). */
 export function formatLocalIso(date: Date): string {
   return formatIsoDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
+}
+
+/** `YYYY-MM-DD` → "Jul 4, 2026" for display. */
+export function formatHumanDate(iso: string): string {
+  const { year, month } = isoYearMonth(iso);
+  return `${MONTH_NAMES[month - 1]!.slice(0, 3)} ${Number(iso.slice(8, 10))}, ${year}`;
+}
+
+const WEEKDAY_NAMES = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+];
+
+/** A Date's local calendar day as "Saturday, July 5" (new-tab hero date line). */
+export function formatLongDate(date: Date): string {
+  return `${WEEKDAY_NAMES[date.getDay()]}, ${MONTH_NAMES[date.getMonth()]} ${date.getDate()}`;
+}
+
+/** `YYYY-MM-DD` → "Jul 22" (short, year-free). */
+export function formatShortDate(iso: string): string {
+  const { month } = isoYearMonth(iso);
+  return `${MONTH_NAMES[month - 1]!.slice(0, 3)} ${Number(iso.slice(8, 10))}`;
 }
 
 /** Comparable month ordinal: later months compare greater. */

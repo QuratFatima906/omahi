@@ -5,7 +5,8 @@ import {
   isoYearMonth,
   monthOrdinal,
   shiftMonth,
-} from '../../lib/month-grid';
+  WEEKDAYS,
+} from '../lib/month-grid';
 
 interface MonthCalendarProps {
   /** Local calendar today (`YYYY-MM-DD`); future days are not selectable. */
@@ -14,7 +15,7 @@ interface MonthCalendarProps {
   onSelect(iso: string): void;
 }
 
-const WEEKDAY_INITIALS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const WEEKDAY_INITIALS = WEEKDAYS.map((weekday) => weekday.charAt(0));
 
 export function MonthCalendar({ todayIso, selected, onSelect }: MonthCalendarProps) {
   const [view, setView] = useState(() => isoYearMonth(selected ?? todayIso));
@@ -22,13 +23,13 @@ export function MonthCalendar({ todayIso, selected, onSelect }: MonthCalendarPro
   const atCurrentMonth = monthOrdinal(view.year, view.month) >= isoMonthOrdinal(todayIso);
 
   return (
-    <div className="mt-[22px] rounded-[14px] bg-surface p-4">
-      <div className="flex items-center justify-between px-1.5 pb-3 font-display text-sm font-bold">
+    <div className="mt-[22px] rounded-[18px] border border-glass-border bg-glass p-4 backdrop-blur-[20px] backdrop-saturate-150">
+      <div className="flex items-center justify-between pb-2 font-display text-sm font-bold">
         <button
           type="button"
           aria-label="Previous month"
           onClick={() => setView(shiftMonth(view.year, view.month, -1))}
-          className="cursor-pointer px-1 text-ink-ghost"
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-[20px] font-normal text-ink-faint hover:bg-ink/10"
         >
           ‹
         </button>
@@ -38,7 +39,7 @@ export function MonthCalendar({ todayIso, selected, onSelect }: MonthCalendarPro
           aria-label="Next month"
           disabled={atCurrentMonth}
           onClick={() => setView(shiftMonth(view.year, view.month, 1))}
-          className="cursor-pointer px-1 text-ink-ghost disabled:cursor-default disabled:opacity-40"
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-[20px] font-normal text-ink-faint hover:bg-ink/10 disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent"
         >
           ›
         </button>
@@ -66,10 +67,10 @@ export function MonthCalendar({ todayIso, selected, onSelect }: MonthCalendarPro
               onClick={() => onSelect(cell.iso)}
               className={`rounded-full py-[7px] text-center text-[12.5px] ${
                 isSelected
-                  ? 'bg-brand-gradient font-extrabold text-white'
+                  ? 'bg-rose font-extrabold text-white'
                   : isFuture
                     ? 'text-ink-ghost/50'
-                    : 'cursor-pointer text-ink hover:bg-line'
+                    : 'cursor-pointer text-ink hover:bg-ink/10'
               }`}
             >
               {cell.day}

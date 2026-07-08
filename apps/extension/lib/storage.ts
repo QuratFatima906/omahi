@@ -103,6 +103,9 @@ export function validateState(value: unknown): OmahiState {
   if (!Array.isArray(value.periodLog)) {
     throw new StorageSchemaError('state.periodLog must be an array');
   }
+  // Note: schema validation is deliberately clock-free (no "not in the
+  // future" rule here) — the calendar UI blocks future picks, and the JSON
+  // import flow (Chunk 8) is responsible for warning on future-dated data.
   for (const [index, entry] of value.periodLog.entries()) {
     if (!isRecord(entry) || typeof entry.start !== 'string' || parseIsoDate(entry.start) === null) {
       throw new StorageSchemaError(
@@ -190,7 +193,7 @@ export function importStateJson(json: string): OmahiState {
   try {
     parsed = JSON.parse(json);
   } catch {
-    throw new StorageSchemaError('import failed: not valid JSON');
+    throw new StorageSchemaError('the file is not valid JSON');
   }
   return migrateState(parsed);
 }
@@ -206,10 +209,25 @@ export interface OmahiStorage {
   load(): Promise<OmahiState>;
   /** Validate and persist a full state. */
   save(state: OmahiState): Promise<void>;
-  /** Validate and persist a new cycle config, preserving the rest of the state. */
-  saveCycleConfig(config: CycleConfig): Promise<OmahiState>;
+  /**
+   * Merge a patch into the stored cycle config (the settings editor's
+   * write). Patch-based so rapid successive edits can't clobber each other
+   * via stale render-time props. When the anchor date changes, periodLog
+   * entries dated after the new anchor are pruned — the anchor-precedence
+   * rule (predictions use the latest of anchor and log) would otherwise
+   * silently override the edit. Throws before onboarding.
+   */
+  saveCycleConfig(patch: Partial<CycleConfig>): Promise<OmahiState>;
+  /** Flip the new-tab override from the stored value (not a caller snapshot). */
+  toggleNewTab(): Promise<OmahiState>;
   /** Persist the onboarding result (config + settings) in one write. */
   completeOnboarding(config: CycleConfig, settings: OmahiSettings): Promise<OmahiState>;
+  /** Append a period start (`YYYY-MM-DD`). No-op if that date is already logged. */
+  logPeriod(start: string): Promise<OmahiState>;
+  /** Remove the most recently logged period. No-op on an empty log. */
+  undoLastPeriod(): Promise<OmahiState>;
+  /** Erase everything back to the pre-onboarding empty state. */
+  reset(): Promise<OmahiState>;
 }
 
 export function createOmahiStorage(area: StorageAreaLike): OmahiStorage {
@@ -240,7 +258,13 @@ export function createOmahiStorage(area: StorageAreaLike): OmahiStorage {
     await area.set({ [STORAGE_KEY]: validateState(state) });
   }
 
-  /** Read-modify-write: load fresh (another surface may have written), patch, save. */
+  /**
+   * Read-modify-write: load fresh (another surface may have written), patch,
+   * save. NOT atomic — chrome.storage has no transactions, so two surfaces
+   * writing simultaneously last-write-wins. Acceptable while the popup is the
+   * only write surface; Chunk 9's new-tab page must stay read-only for cycle
+   * data (its settings toggle is the sole exception, edited from the popup).
+   */
   async function update(patch: Partial<OmahiState>): Promise<OmahiState> {
     const state = { ...(await load()), ...patch };
     await save(state);
@@ -250,9 +274,54 @@ export function createOmahiStorage(area: StorageAreaLike): OmahiStorage {
   return {
     load,
     save,
-    saveCycleConfig: (config: CycleConfig) => update({ cycleConfig: config }),
+    async saveCycleConfig(patch: Partial<CycleConfig>): Promise<OmahiState> {
+      const state = await load();
+      if (state.cycleConfig === null) {
+        throw new StorageSchemaError('cannot edit the cycle config before onboarding');
+      }
+      const config = { ...state.cycleConfig, ...patch };
+      const anchorChanged = state.cycleConfig.anchorDate !== config.anchorDate;
+      const periodLog = anchorChanged
+        ? state.periodLog.filter((entry) => entry.start <= config.anchorDate)
+        : state.periodLog;
+      const next = { ...state, cycleConfig: config, periodLog };
+      await save(next);
+      return next;
+    },
+    async toggleNewTab(): Promise<OmahiState> {
+      const state = await load();
+      const next = {
+        ...state,
+        settings: { ...state.settings, newTabEnabled: !state.settings.newTabEnabled },
+      };
+      await save(next);
+      return next;
+    },
     completeOnboarding: (config: CycleConfig, settings: OmahiSettings) =>
       update({ cycleConfig: config, settings }),
+    async logPeriod(start: string): Promise<OmahiState> {
+      const state = await load();
+      if (state.periodLog.some((entry) => entry.start === start)) {
+        return state;
+      }
+      const next = { ...state, periodLog: [...state.periodLog, { start }] };
+      await save(next);
+      return next;
+    },
+    async undoLastPeriod(): Promise<OmahiState> {
+      const state = await load();
+      if (state.periodLog.length === 0) {
+        return state;
+      }
+      const next = { ...state, periodLog: state.periodLog.slice(0, -1) };
+      await save(next);
+      return next;
+    },
+    async reset(): Promise<OmahiState> {
+      const state = createEmptyState();
+      await save(state);
+      return state;
+    },
   };
 }
 

@@ -47,7 +47,7 @@ interface PhaseRanges {
   luteal: { start: number; end: number };
 }
 
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
+export const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const LUTEAL_HEURISTIC_DAYS = 14;
 
 function getPhaseRanges(config: CycleConfig): PhaseRanges {
@@ -92,6 +92,18 @@ function phaseInfoAt(config: CycleConfig, anchorMs: number, utcMidnightMs: numbe
     nextPhase,
     daysUntilNextPhase: ranges[phase].end + 1 - cycleDay,
   };
+}
+
+/**
+ * Days each phase spans in one cycle (an empty follicular phase yields 0).
+ * Sums to cycleLength. Throws CycleConfigError on an invalid config.
+ */
+export function getPhaseLengths(config: CycleConfig): Record<Phase, number> {
+  validateCycleConfig(config);
+  const ranges = getPhaseRanges(config);
+  return Object.fromEntries(
+    PHASES.map((phase) => [phase, Math.max(0, ranges[phase].end - ranges[phase].start + 1)]),
+  ) as Record<Phase, number>;
 }
 
 /**

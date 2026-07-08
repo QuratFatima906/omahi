@@ -1,0 +1,112 @@
+{
+  "menstruation": {
+    "hero": "Rest is productive",
+    "base": {
+      "work": "Reflective time — keep the load light and let ideas simmer.",
+      "food": "Cozy, warm meals; keep it gentle.",
+      "move": "Gentle only — walks, stretching, slow flows.",
+      "rest": "High rest; guard your evenings."
+    },
+    "dayVariants": [
+      {
+        "hero": "Day one, go soft",
+        "work": "Clear the calendar where you can; essentials only."
+      },
+      {
+        "work": "Still low-power mode — shortlists, not marathons."
+      },
+      {
+        "hero": "Energy stirs soon",
+        "move": "A slow walk might feel surprisingly good."
+      }
+    ],
+    "tips": [
+      "Cancel one thing today. Omahi won't tell.",
+      "Warm drink, warm blanket, low expectations.",
+      "Write down the one thing that actually matters this week — just one.",
+      "Your pace today is the right pace."
+    ]
+  },
+  "follicular": {
+    "hero": "Big-idea energy",
+    "base": {
+      "work": "Execution mode — start the project you've been circling.",
+      "food": "Lighter, brighter meals suit this stretch.",
+      "move": "Mid-range intensity — energy is climbing.",
+      "rest": "Say yes to plans; adventure suits you."
+    },
+    "dayVariants": [
+      {
+        "hero": "Fresh-start energy",
+        "work": "Pick the thing you'll build this cycle and take the first step."
+      },
+      {
+        "move": "Add a little more than last time — it will probably feel easy."
+      },
+      {
+        "work": "Momentum is real now — block a deep-work morning."
+      }
+    ],
+    "tips": [
+      "That idea from yesterday? Today's the day to open the doc.",
+      "Book the thing you've been putting off — future you says thanks.",
+      "Ride the momentum: one bold email, sent.",
+      "Try the new route, the new recipe, the new anything."
+    ]
+  },
+  "ovulation": {
+    "hero": "Your spotlight week",
+    "base": {
+      "work": "Big meetings, pitches, hard conversations — schedule them now.",
+      "food": "Fresh fruits, salads, lighter plates.",
+      "move": "Your hardest workouts land well now.",
+      "rest": "Most social stretch — plan the dinner."
+    },
+    "dayVariants": [
+      {
+        "hero": "Center stage"
+      },
+      {
+        "work": "Peak-day energy: the pitch, the ask, the talk."
+      },
+      {
+        "hero": "Make it count",
+        "rest": "One more yes before the wind-down."
+      }
+    ],
+    "tips": [
+      "Ask for the thing. This is the week they'll hear you best.",
+      "Say the hard thing kindly — your delivery is on point right now.",
+      "Plan the dinner, own the room.",
+      "Charisma days: spend them on people, not inboxes."
+    ]
+  },
+  "luteal": {
+    "hero": "Get organized",
+    "base": {
+      "work": "Details, admin, finishing — notice what feels off.",
+      "food": "A few more calories are normal; eat warmly.",
+      "move": "Taper from harder to lighter as the days pass.",
+      "rest": "Wind down; protect quiet time."
+    },
+    "dayVariants": [
+      {
+        "hero": "Shift gears",
+        "work": "Switch from starting to finishing — close loops."
+      },
+      {
+        "move": "Still strong days — use them, then ease off."
+      },
+      {
+        "hero": "Cozy focus",
+        "rest": "Start declining the late things."
+      }
+    ],
+    "tips": [
+      "Unfinished loops feel louder now. Close two small ones.",
+      "If everything feels slightly off, that's the phase talking — jot it down before acting on it.",
+      "Tidy one drawer, one folder, one list. Instant relief.",
+      "Lower the bar a notch; keep the streak alive."
+    ]
+  }
+}
