@@ -103,10 +103,7 @@ function CycleRing({ fraction, color }: { fraction: number; color: string }) {
 function NewTabDashboard({ state }: { state: OmahiState }) {
   const now = useNow();
   const model = getNewTabModel(effectiveCycleConfig(state)!, now);
-  const { color, deep } = PHASE_STYLE[model.phase];
-  // The design darkens the ovulation lead-in for contrast on the glass card;
-  // `deep` is that text-on-tint variant (aliases the base everywhere else).
-  const tipAccent = model.phase === 'ovulation' ? deep : color;
+  const { color } = PHASE_STYLE[model.phase];
   const phaseLabel = model.phase.charAt(0).toUpperCase() + model.phase.slice(1);
   const tint = (pct: number) => `color-mix(in srgb, ${color} ${pct}%, transparent)`;
 
@@ -164,9 +161,6 @@ function NewTabDashboard({ state }: { state: OmahiState }) {
           </div>
           <div className="h-px bg-ink/[0.08]" />
           <div className="text-[17px] leading-normal text-ink/75">
-            <b className="font-semibold" style={{ color: tipAccent }}>
-              One thing for today:
-            </b>{' '}
             {model.tip}
           </div>
         </div>

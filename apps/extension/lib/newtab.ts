@@ -18,7 +18,6 @@ export interface NewTabModel {
   ringFraction: number;
   /** Status line under the phase title inside the widget. */
   statusLine: string;
-  /** Rendered after the "One thing for today:" lead-in. */
   tip: string;
 }
 
@@ -35,22 +34,22 @@ const COUNTDOWN_WINDOW_DAYS = 7;
 const PHASE_COPY: Record<Phase, PhaseCopy> = {
   menstruation: {
     statusLine: () => 'Rest counts as progress today',
-    tip: 'keep the schedule light — cancel or move one thing if you can.',
+    tip: 'Keep the schedule light — cancel or move one thing if you can.',
   },
   follicular: {
     statusLine: () => 'Energy is climbing this week',
-    tip: "open the project you've been putting off — starting feels easier this week.",
+    tip: "Open the project you've been putting off — starting feels easier this week.",
   },
   ovulation: {
     statusLine: () => 'Peak energy · your best week',
-    tip: "schedule the hard conversation or big pitch — you'll land it best now.",
+    tip: "Schedule the hard conversation or big pitch — you'll land it best now.",
   },
   luteal: {
     statusLine: (daysToPeriod) =>
       daysToPeriod <= COUNTDOWN_WINDOW_DAYS
         ? `Period expected in ~${daysToPeriod} ${daysToPeriod === 1 ? 'day' : 'days'}`
         : 'Steady energy — good week to finish things',
-    tip: 'clear the small stuff off your list — deep focus comes back next week.',
+    tip: 'Clear the small stuff off your list — deep focus comes back next week.',
   },
 };
 

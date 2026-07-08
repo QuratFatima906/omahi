@@ -10,7 +10,6 @@ test('new tab renders the glass dashboard when enabled', async ({ context, exten
   await expect(page.locator('[data-newtab="clock"]')).toHaveText(/\d{1,2}[:.]\d{2}/);
   await expect(page.getByText('Follicular · Day 9 of 28')).toBeVisible();
   await expect(page.getByText('Energy is climbing this week')).toBeVisible();
-  await expect(page.getByText(/One thing for today:/)).toBeVisible();
 
   const [popup] = await Promise.all([
     context.waitForEvent('page'),

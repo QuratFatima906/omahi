@@ -27,7 +27,6 @@ interface NewTabModel {
   ringFraction: number;
   /** Status line under the phase title inside the widget. */
   statusLine: string;
-  /** Rendered after the "One thing for today:" lead-in. */
   tip: string;
 }
 ```
@@ -79,8 +78,7 @@ New pure helper `getGreeting(date: Date): string` — `Good morning` (05:00–11
     - Title: `Menstruation · Day 2 of 28` — 22px, weight 600.
     - Status line: 16px, ink at 55%.
   - Hairline divider: 1px, ink at 8%.
-  - Tip: 17px/1.5, ink at 75%; `One thing for today:` lead-in at weight 600 in
-    the phase accent (`deep` variant for ovulation, as today).
+  - Tip: 17px/1.5, ink at 75%; standalone sentence, no lead-in or accent.
 
 ## Background
 
