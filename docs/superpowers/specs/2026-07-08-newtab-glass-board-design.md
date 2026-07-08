@@ -36,13 +36,13 @@ and headline are gone from the design).
 
 Status lines:
 
-| Phase | Status line |
-| --- | --- |
-| menstruation | `Rest counts as progress today` |
-| follicular | `Energy is climbing this week` (static — no ovulation countdown) |
-| ovulation | `Peak energy · your best week` |
+| Phase                        | Status line                                                                          |
+| ---------------------------- | ------------------------------------------------------------------------------------ |
+| menstruation                 | `Rest counts as progress today`                                                      |
+| follicular                   | `Energy is climbing this week` (static — no ovulation countdown)                     |
+| ovulation                    | `Peak energy · your best week`                                                       |
 | luteal, period ≤ 7 days away | `Period expected in ~N days` (`N = cycleLength − cycleDay + 1`, singular "day" at 1) |
-| luteal, earlier | `Steady energy — good week to finish things` |
+| luteal, earlier              | `Steady energy — good week to finish things`                                         |
 
 Tips are unchanged from the current `PHASE_COPY`.
 
@@ -95,9 +95,9 @@ three phase-tinted layers using
 Two new tokens with dark overrides in the existing
 `[data-surface='newtab']` dark block:
 
-| Token | Light | Dark |
-| --- | --- | --- |
-| `--color-glass` | `rgba(255,255,255,0.55)` | `rgba(38,30,42,0.55)` |
+| Token                  | Light                    | Dark                     |
+| ---------------------- | ------------------------ | ------------------------ |
+| `--color-glass`        | `rgba(255,255,255,0.55)` | `rgba(38,30,42,0.55)`    |
 | `--color-glass-border` | `rgba(255,255,255,0.75)` | `rgba(255,255,255,0.12)` |
 
 `--color-ring-track` becomes unused by the new tab (calendar keeps its own

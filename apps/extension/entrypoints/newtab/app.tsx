@@ -13,9 +13,7 @@ import { omahiStorage, type OmahiState } from '../../lib/storage';
  */
 
 function Wordmark() {
-  return (
-    <span className="font-display text-2xl font-bold tracking-tight text-ink/35">omahi</span>
-  );
+  return <span className="font-display text-2xl font-bold tracking-tight text-ink/35">omahi</span>;
 }
 
 /** Quiet fallback when the user turned the override off in settings. */
@@ -160,9 +158,7 @@ function NewTabDashboard({ state }: { state: OmahiState }) {
             </div>
           </div>
           <div className="h-px bg-ink/[0.08]" />
-          <div className="text-[17px] leading-normal text-ink/75">
-            {model.tip}
-          </div>
+          <div className="text-[17px] leading-normal text-ink/75">{model.tip}</div>
         </div>
       </div>
     </div>
