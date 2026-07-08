@@ -19,20 +19,20 @@ const validConfig = { anchorDate: '2026-06-20', cycleLength: 28, periodLength: 5
 
 function validState(): OmahiState {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     cycleConfig: validConfig,
     periodLog: [{ start: '2026-06-20' }],
-    settings: { newTabEnabled: true },
+    settings: { newTabEnabled: true, quietMode: false },
   };
 }
 
-/** A valid v2 state to spread invalid single fields into. */
+/** A valid v3 state to spread invalid single fields into. */
 function base(): Record<string, unknown> {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     cycleConfig: null,
     periodLog: [],
-    settings: { newTabEnabled: false },
+    settings: { newTabEnabled: false, quietMode: false },
   };
 }
 
@@ -60,7 +60,7 @@ describe('validateState', () => {
       schemaVersion: SCHEMA_VERSION,
       cycleConfig: null,
       periodLog: [],
-      settings: { newTabEnabled: false },
+      settings: { newTabEnabled: false, quietMode: false },
     });
   });
 
@@ -74,8 +74,8 @@ describe('validateState', () => {
     ['array', []],
     ['missing schemaVersion', { ...base(), schemaVersion: undefined }],
     ['wrong schemaVersion', { ...base(), schemaVersion: 99 }],
-    ['outdated schemaVersion', { ...base(), schemaVersion: 1 }],
-    ['string schemaVersion', { ...base(), schemaVersion: '2' }],
+    ['outdated schemaVersion', { ...base(), schemaVersion: 2 }],
+    ['string schemaVersion', { ...base(), schemaVersion: '3' }],
     ['cycleConfig not object', { ...base(), cycleConfig: 'x' }],
     [
       'cycleConfig non-string anchorDate',
@@ -95,7 +95,15 @@ describe('validateState', () => {
     ['periodLog entry bad date', { ...base(), periodLog: [{ start: 'not-a-date' }] }],
     ['missing settings', { ...base(), settings: undefined }],
     ['settings not object', { ...base(), settings: true }],
-    ['settings non-boolean newTabEnabled', { ...base(), settings: { newTabEnabled: 'yes' } }],
+    [
+      'settings non-boolean newTabEnabled',
+      { ...base(), settings: { newTabEnabled: 'yes', quietMode: false } },
+    ],
+    [
+      'settings non-boolean quietMode',
+      { ...base(), settings: { newTabEnabled: true, quietMode: 'yes' } },
+    ],
+    ['settings missing quietMode', { ...base(), settings: { newTabEnabled: true } }],
   ])('rejects %s', (_name, value) => {
     expect(() => validateState(value)).toThrow(StorageSchemaError);
   });
@@ -111,8 +119,11 @@ describe('validateState', () => {
   });
 
   it('strips unknown fields from settings', () => {
-    const state = validateState({ ...base(), settings: { newTabEnabled: true, junk: 1 } });
-    expect(state.settings).toEqual({ newTabEnabled: true });
+    const state = validateState({
+      ...base(),
+      settings: { newTabEnabled: true, quietMode: true, junk: 1 },
+    });
+    expect(state.settings).toEqual({ newTabEnabled: true, quietMode: true });
   });
 });
 
@@ -126,30 +137,45 @@ describe('migrateState', () => {
     expect(migrateState(validState())).toEqual(validState());
   });
 
-  it('lifts a pre-versioned (v0) state to v2', () => {
+  it('lifts a pre-versioned (v0) state to the current version', () => {
     expect(migrateState({ cycleConfig: validConfig })).toEqual({
-      schemaVersion: 2,
+      schemaVersion: 3,
       cycleConfig: validConfig,
       periodLog: [],
       settings: createDefaultSettings(),
     });
   });
 
-  it('lifts an empty v0 object to an empty v2 state', () => {
+  it('lifts an empty v0 object to an empty current-version state', () => {
     expect(migrateState({})).toEqual(createEmptyState());
   });
 
-  it('lifts a v1 state to v2 with default settings, preserving data', () => {
+  it('lifts a v1 state through every step with default settings, preserving data', () => {
     const v1 = {
       schemaVersion: 1,
       cycleConfig: validConfig,
       periodLog: [{ start: '2026-06-20' }],
     };
     expect(migrateState(v1)).toEqual({
+      schemaVersion: 3,
+      cycleConfig: validConfig,
+      periodLog: [{ start: '2026-06-20' }],
+      settings: { newTabEnabled: false, quietMode: false },
+    });
+  });
+
+  it('lifts a v2 state to v3, preserving the newTabEnabled choice', () => {
+    const v2 = {
       schemaVersion: 2,
       cycleConfig: validConfig,
       periodLog: [{ start: '2026-06-20' }],
-      settings: { newTabEnabled: false },
+      settings: { newTabEnabled: true },
+    };
+    expect(migrateState(v2)).toEqual({
+      schemaVersion: 3,
+      cycleConfig: validConfig,
+      periodLog: [{ start: '2026-06-20' }],
+      settings: { newTabEnabled: true, quietMode: false },
     });
   });
 
@@ -162,7 +188,7 @@ describe('migrateState', () => {
     ['negative version', { schemaVersion: -1 }],
     ['explicit version 0', { schemaVersion: 0 }],
     ['fractional version', { schemaVersion: 0.5 }],
-    ['string version', { ...base(), schemaVersion: '2' }],
+    ['string version', { ...base(), schemaVersion: '3' }],
     ['migrated-but-invalid payload', { cycleConfig: { ...validConfig, periodLength: 99 } }],
   ])('rejects %s', (_name, value) => {
     expect(() => migrateState(value)).toThrow(StorageSchemaError);
@@ -191,7 +217,7 @@ describe('export / import JSON', () => {
 
   it('import migrates a v0 backup', () => {
     expect(importStateJson(JSON.stringify({ cycleConfig: validConfig }))).toEqual({
-      schemaVersion: 2,
+      schemaVersion: 3,
       cycleConfig: validConfig,
       periodLog: [],
       settings: createDefaultSettings(),
@@ -201,10 +227,25 @@ describe('export / import JSON', () => {
   it('import migrates a v1 backup', () => {
     const v1 = { schemaVersion: 1, cycleConfig: validConfig, periodLog: [] };
     expect(importStateJson(JSON.stringify(v1))).toEqual({
-      schemaVersion: 2,
+      schemaVersion: 3,
       cycleConfig: validConfig,
       periodLog: [],
       settings: createDefaultSettings(),
+    });
+  });
+
+  it('import migrates a v2 backup, preserving its settings', () => {
+    const v2 = {
+      schemaVersion: 2,
+      cycleConfig: validConfig,
+      periodLog: [],
+      settings: { newTabEnabled: true },
+    };
+    expect(importStateJson(JSON.stringify(v2))).toEqual({
+      schemaVersion: 3,
+      cycleConfig: validConfig,
+      periodLog: [],
+      settings: { newTabEnabled: true, quietMode: false },
     });
   });
 });
@@ -238,7 +279,7 @@ describe('createOmahiStorage', () => {
     });
     const storage = createOmahiStorage(area);
     const expected = {
-      schemaVersion: 2,
+      schemaVersion: 3,
       cycleConfig: validConfig,
       periodLog: [],
       settings: createDefaultSettings(),
@@ -256,7 +297,7 @@ describe('createOmahiStorage', () => {
     });
     const storage = createOmahiStorage(area);
     const expected = {
-      schemaVersion: 2,
+      schemaVersion: 3,
       cycleConfig: validConfig,
       periodLog: [],
       settings: createDefaultSettings(),
@@ -283,16 +324,16 @@ describe('createOmahiStorage', () => {
         ...base(),
         cycleConfig: validConfig,
         periodLog: [{ start: '2026-05-23' }],
-        settings: { newTabEnabled: true },
+        settings: { newTabEnabled: true, quietMode: false },
       },
     });
     const storage = createOmahiStorage(area);
     const state = await storage.saveCycleConfig({ cycleLength: 30 });
     expect(state).toEqual({
-      schemaVersion: 2,
+      schemaVersion: 3,
       cycleConfig: { ...validConfig, cycleLength: 30 },
       periodLog: [{ start: '2026-05-23' }],
-      settings: { newTabEnabled: true },
+      settings: { newTabEnabled: true, quietMode: false },
     });
     expect(await storage.load()).toEqual(state);
   });
@@ -348,6 +389,26 @@ describe('createOmahiStorage', () => {
     expect((await storage.load()).settings.newTabEnabled).toBe(false);
   });
 
+  it('toggleQuiet flips only quietMode, leaving other settings alone', async () => {
+    const { area } = createFakeArea({
+      [STORAGE_KEY]: {
+        ...base(),
+        cycleConfig: validConfig,
+        settings: { newTabEnabled: true, quietMode: false },
+      },
+    });
+    const storage = createOmahiStorage(area);
+    expect((await storage.toggleQuiet()).settings).toEqual({
+      newTabEnabled: true,
+      quietMode: true,
+    });
+    expect((await storage.toggleQuiet()).settings).toEqual({
+      newTabEnabled: true,
+      quietMode: false,
+    });
+    expect((await storage.load()).settings.quietMode).toBe(false);
+  });
+
   it('reset erases everything back to the empty state', async () => {
     const { area } = createFakeArea({ [STORAGE_KEY]: validState() });
     const storage = createOmahiStorage(area);
@@ -369,12 +430,15 @@ describe('createOmahiStorage', () => {
       [STORAGE_KEY]: { ...base(), periodLog: [{ start: '2026-05-23' }] },
     });
     const storage = createOmahiStorage(area);
-    const state = await storage.completeOnboarding(validConfig, { newTabEnabled: true });
+    const state = await storage.completeOnboarding(validConfig, {
+      newTabEnabled: true,
+      quietMode: false,
+    });
     expect(state).toEqual({
-      schemaVersion: 2,
+      schemaVersion: 3,
       cycleConfig: validConfig,
       periodLog: [{ start: '2026-05-23' }],
-      settings: { newTabEnabled: true },
+      settings: { newTabEnabled: true, quietMode: false },
     });
     expect(getSetCalls()).toBe(1);
     expect(await storage.load()).toEqual(state);
@@ -384,7 +448,10 @@ describe('createOmahiStorage', () => {
     const { area, getSetCalls } = createFakeArea();
     const storage = createOmahiStorage(area);
     await expect(
-      storage.completeOnboarding({ ...validConfig, periodLength: 99 }, { newTabEnabled: false }),
+      storage.completeOnboarding(
+        { ...validConfig, periodLength: 99 },
+        { newTabEnabled: false, quietMode: false },
+      ),
     ).rejects.toThrow(StorageSchemaError);
     expect(getSetCalls()).toBe(0);
   });

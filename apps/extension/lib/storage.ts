@@ -10,7 +10,7 @@
 import { parseIsoDate, validateCycleConfig, type CycleConfig } from '@omahi/core';
 import { browser } from 'wxt/browser';
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 export const STORAGE_KEY = 'omahi';
 /** Where load() parks unreadable stored data instead of bricking on it. */
 export const CORRUPT_BACKUP_KEY = 'omahi-corrupt';
@@ -25,6 +25,11 @@ export interface PeriodLogEntry {
 export interface OmahiSettings {
   /** Whether the new-tab page override is on (Chunk 9 consumes this). */
   newTabEnabled: boolean;
+  /**
+   * Privacy screen for the new tab: when on, the dashboard collapses to a
+   * clock-only view (safe to screen-share) until the user turns it back off.
+   */
+  quietMode: boolean;
 }
 
 export interface OmahiState {
@@ -49,7 +54,7 @@ export class StorageSchemaError extends Error {
  * new tab without consent. Onboarding sets it explicitly.
  */
 export function createDefaultSettings(): OmahiSettings {
-  return { newTabEnabled: false };
+  return { newTabEnabled: false, quietMode: false };
 }
 
 export function createEmptyState(): OmahiState {
@@ -113,14 +118,23 @@ export function validateState(value: unknown): OmahiState {
       );
     }
   }
-  if (!isRecord(value.settings) || typeof value.settings.newTabEnabled !== 'boolean') {
-    throw new StorageSchemaError('state.settings must have a boolean newTabEnabled');
+  if (
+    !isRecord(value.settings) ||
+    typeof value.settings.newTabEnabled !== 'boolean' ||
+    typeof value.settings.quietMode !== 'boolean'
+  ) {
+    throw new StorageSchemaError(
+      'state.settings must have boolean newTabEnabled and quietMode fields',
+    );
   }
   return {
     schemaVersion: SCHEMA_VERSION,
     cycleConfig,
     periodLog: (value.periodLog as PeriodLogEntry[]).map((entry) => ({ start: entry.start })),
-    settings: { newTabEnabled: value.settings.newTabEnabled },
+    settings: {
+      newTabEnabled: value.settings.newTabEnabled,
+      quietMode: value.settings.quietMode,
+    },
   };
 }
 
@@ -137,7 +151,13 @@ const MIGRATIONS: Record<number, (state: Record<string, unknown>) => Record<stri
   1: (state) => ({
     ...state,
     schemaVersion: 2,
-    settings: createDefaultSettings(),
+    settings: { newTabEnabled: false },
+  }),
+  // Quiet mode starts off: an update must never hide an existing dashboard.
+  2: (state) => ({
+    ...state,
+    schemaVersion: 3,
+    settings: { ...(state.settings as Record<string, unknown>), quietMode: false },
   }),
 };
 
@@ -220,6 +240,12 @@ export interface OmahiStorage {
   saveCycleConfig(patch: Partial<CycleConfig>): Promise<OmahiState>;
   /** Flip the new-tab override from the stored value (not a caller snapshot). */
   toggleNewTab(): Promise<OmahiState>;
+  /**
+   * Flip quiet mode from the stored value. The ONE write the new-tab page is
+   * allowed to make (see the concurrency note on `update`) — everything else
+   * still goes through the popup.
+   */
+  toggleQuiet(): Promise<OmahiState>;
   /** Persist the onboarding result (config + settings) in one write. */
   completeOnboarding(config: CycleConfig, settings: OmahiSettings): Promise<OmahiState>;
   /** Append a period start (`YYYY-MM-DD`). No-op if that date is already logged. */
@@ -261,9 +287,10 @@ export function createOmahiStorage(area: StorageAreaLike): OmahiStorage {
   /**
    * Read-modify-write: load fresh (another surface may have written), patch,
    * save. NOT atomic — chrome.storage has no transactions, so two surfaces
-   * writing simultaneously last-write-wins. Acceptable while the popup is the
-   * only write surface; Chunk 9's new-tab page must stay read-only for cycle
-   * data (its settings toggle is the sole exception, edited from the popup).
+   * writing simultaneously last-write-wins. Acceptable because the popup is
+   * the only surface writing cycle data; the new-tab page stays read-only for
+   * everything except `toggleQuiet` (a single-flag read-modify-write, so the
+   * worst cross-surface race loses one toggle tap, never cycle data).
    */
   async function update(patch: Partial<OmahiState>): Promise<OmahiState> {
     const state = { ...(await load()), ...patch };
@@ -293,6 +320,15 @@ export function createOmahiStorage(area: StorageAreaLike): OmahiStorage {
       const next = {
         ...state,
         settings: { ...state.settings, newTabEnabled: !state.settings.newTabEnabled },
+      };
+      await save(next);
+      return next;
+    },
+    async toggleQuiet(): Promise<OmahiState> {
+      const state = await load();
+      const next = {
+        ...state,
+        settings: { ...state.settings, quietMode: !state.settings.quietMode },
       };
       await save(next);
       return next;
