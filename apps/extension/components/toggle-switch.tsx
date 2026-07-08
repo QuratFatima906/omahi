@@ -14,7 +14,7 @@ export function ToggleSwitch({ checked, label, onToggle }: ToggleSwitchProps) {
       aria-label={label}
       onClick={onToggle}
       className={`relative h-[27px] w-[46px] shrink-0 cursor-pointer rounded-full transition-colors ${
-        checked ? 'bg-brand-gradient' : 'bg-line'
+        checked ? 'bg-rose' : 'bg-ink/15'
       }`}
     >
       <span

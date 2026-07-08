@@ -1,22 +1,17 @@
 import type { ButtonHTMLAttributes } from 'react';
 
 const base =
-  'cursor-pointer rounded-xl py-[13px] text-center font-display text-[15px] font-bold ' +
+  'cursor-pointer rounded-[13px] py-[13px] text-center font-display text-[15px] font-bold ' +
   'disabled:cursor-default disabled:opacity-60';
 
 export function PrimaryButton({
   className = '',
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement>) {
-  return (
-    <button
-      type="button"
-      {...props}
-      className={`${base} bg-brand-gradient text-white ${className}`}
-    />
-  );
+  return <button type="button" {...props} className={`${base} bg-rose text-white ${className}`} />;
 }
 
+/** Frosted secondary action — glass pane beside the solid rose primary. */
 export function SecondaryButton({
   className = '',
   ...props
@@ -25,7 +20,7 @@ export function SecondaryButton({
     <button
       type="button"
       {...props}
-      className={`${base} border-[1.5px] border-line text-ink-muted ${className}`}
+      className={`${base} border border-glass-border bg-glass-soft text-ink-soft backdrop-blur-[12px] ${className}`}
     />
   );
 }
