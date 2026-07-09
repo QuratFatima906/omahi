@@ -3,7 +3,7 @@ import { browser } from 'wxt/browser';
 import { CycleRing } from '../../components/cycle-ring';
 import { GearIcon } from '../../components/icons';
 import { PrimaryButton } from '../../components/onboarding/buttons';
-import { PHASE_STYLE } from '../../components/phase-style';
+import { PHASE_STYLE } from '@omahi/ui';
 import { formatClock, formatDateLine, getGreeting, getNewTabModel } from '../../lib/newtab';
 import { effectiveCycleConfig } from '../../lib/period-log';
 import { omahiStorage, type OmahiState } from '../../lib/storage';

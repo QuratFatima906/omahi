@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { PHASE_LABELS, PHASES, type CycleConfig } from '@omahi/core';
 import { getCalendarMonth } from '../../lib/calendar';
 import { isoYearMonth, shiftMonth, WEEKDAYS } from '../../lib/month-grid';
-import { ambient, GlassScreen } from '../glass-screen';
+import { ambient, GlassScreen, PHASE_STYLE } from '@omahi/ui';
 import { PrimaryButton } from '../onboarding/buttons';
-import { PHASE_STYLE } from '../phase-style';
 
 /** Greyed day number from the previous/next month, padding the week rows. */
 function AdjacentDay({ day }: { day: number }) {
