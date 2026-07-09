@@ -1,4 +1,5 @@
 import { Features } from './components/features';
+import { Faq } from './components/faq';
 import { Hero } from './components/hero';
 import { Nav } from './components/nav';
 import { PhaseCards } from './components/phase-cards';
@@ -10,6 +11,7 @@ export default function App() {
       <Hero />
       <PhaseCards />
       <Features />
+      <Faq />
     </div>
   );
 }
