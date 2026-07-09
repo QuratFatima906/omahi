@@ -1,0 +1,30 @@
+/* Landing-only styles; all tokens and fonts come from @omahi/ui. */
+@import '@omahi/ui/theme.css';
+@source '../../../packages/ui/src';
+
+@theme {
+  /* Floating glass pills in the hero mockup. */
+  --animate-float: float 5s ease-in-out infinite;
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-12px);
+    }
+  }
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  /* Matches the page wrapper's gradient tail so overscroll stays warm. */
+  background: #eee4de;
+}

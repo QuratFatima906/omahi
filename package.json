@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "pnpm --filter @omahi/extension dev",
     "build": "pnpm --filter @omahi/extension build",
+    "dev:landing": "pnpm --filter @omahi/landing dev",
+    "build:landing": "pnpm --filter @omahi/landing build",
     "test": "pnpm -r --if-present test",
     "e2e": "playwright test",
     "lint": "eslint .",
