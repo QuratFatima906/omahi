@@ -68,6 +68,7 @@ apps/landing/
 Creates the package with **copies** of the extension files (originals stay put until Task 2), so the extension keeps working and this task is independently reviewable.
 
 **Files:**
+
 - Create: `packages/ui/package.json`
 - Create: `packages/ui/tsconfig.json`
 - Create: `packages/ui/src/theme.css`
@@ -78,6 +79,7 @@ Creates the package with **copies** of the extension files (originals stay put u
 - Create: `packages/ui/assets/fonts/nunito-sans-latin-wght-normal.woff2` (vendored copy)
 
 **Interfaces:**
+
 - Consumes: `Phase` type from `@omahi/core` (in `phase-style.ts`).
 - Produces (used by Tasks 2, 3, 6–8):
   - `import { GlassScreen, ambient, PHASE_STYLE } from '@omahi/ui'`
@@ -142,6 +144,7 @@ Expected: both `.woff2` files listed.
 - [ ] **Step 4: Write `packages/ui/src/theme.css`**
 
 This is the shared portion of `apps/extension/assets/theme.css`, with three deliberate changes:
+
 1. Font URLs point at the vendored files (package-relative), not `node_modules`.
 2. The `body` rule and the `data-surface` / popup-sizing rules are **omitted** (they stay extension-side, Task 2).
 3. The dark-mode block's selector becomes `:root:not([data-theme='light'])` so the light-only landing page can opt out by stamping `data-theme="light"` on `<html>`. The extension never sets `data-theme`, so its behavior is unchanged.
@@ -347,6 +350,7 @@ git commit -m "feat(ui): extract glass design system into @omahi/ui"
 Import-path updates only — no component rewrites. Deletes the now-duplicated originals.
 
 **Files:**
+
 - Create: `apps/extension/assets/extension.css`
 - Delete: `apps/extension/assets/theme.css`
 - Delete: `apps/extension/components/glass-screen.tsx`
@@ -362,6 +366,7 @@ Import-path updates only — no component rewrites. Deletes the now-duplicated o
 - Modify: `apps/extension/entrypoints/newtab/app.tsx:6`
 
 **Interfaces:**
+
 - Consumes: `@omahi/ui` exports and `@omahi/ui/theme.css` from Task 1.
 - Produces: nothing new — behavior must be identical (regression-tested).
 
@@ -534,10 +539,12 @@ git commit -m "refactor(extension): consume @omahi/ui for tokens and glass compo
 ### Task 3: `GlassCard` / `GlassPanel` primitives
 
 **Files:**
+
 - Create: `packages/ui/src/glass-card.tsx`
 - Modify: `packages/ui/src/index.ts`
 
 **Interfaces:**
+
 - Produces (used by Tasks 6–8):
   - `GlassCard({ className?, style?, children })` — hero-level frosted card: `rounded-[22px]`, `bg-glass`, hairline border, strong blur.
   - `GlassPanel({ className?, style?, children })` — softer row surface: `rounded-[14px]`, `bg-glass-soft`, lighter blur.
@@ -614,6 +621,7 @@ git commit -m "feat(ui): add GlassCard and GlassPanel primitives"
 Empty-but-running landing shell: Vite app boots, theme loads, root scripts wired.
 
 **Files:**
+
 - Create: `apps/landing/package.json`
 - Create: `apps/landing/vite.config.ts`
 - Create: `apps/landing/vitest.config.ts`
@@ -629,6 +637,7 @@ Empty-but-running landing shell: Vite app boots, theme loads, root scripts wired
 - Modify: root `package.json` (scripts)
 
 **Interfaces:**
+
 - Consumes: `@omahi/ui/theme.css` (Task 1).
 - Produces (used by Tasks 5–10):
   - `config: { waitlistCount: number; showSocialProof: boolean; launchWindow: string }` from `src/config.ts`.
@@ -872,10 +881,12 @@ git commit -m "feat(landing): scaffold Vite + React landing app"
 Pure functions, exhaustively tested — this is the only unit-tested landing code per the spec.
 
 **Files:**
+
 - Create: `apps/landing/tests/waitlist.test.ts`
 - Create: `apps/landing/src/lib/waitlist.ts`
 
 **Interfaces:**
+
 - Produces (used by Task 6):
   - `validateEmail(raw: string): { ok: true; email: string } | { ok: false; message: string }` — trims, then validates; `email` is the trimmed value.
   - `substackSubscribeUrl(email: string): string` — trims + URL-encodes into the subscribe link.
@@ -1002,9 +1013,11 @@ git commit -m "feat(landing): waitlist email validation and Substack subscribe U
 Two-state glass card: the form, and the post-submit "Almost done" state (spec overrides the design's "You're on the list" copy because subscription completes in the Substack tab). Includes a visible fallback link for blocked popups.
 
 **Files:**
+
 - Create: `apps/landing/src/components/waitlist-form.tsx`
 
 **Interfaces:**
+
 - Consumes: `validateEmail`, `substackSubscribeUrl` (Task 5); `GlassCard` (Task 3); `config` (Task 4).
 - Produces (used by Task 7): `WaitlistForm()` — self-contained, no props.
 
@@ -1122,11 +1135,13 @@ git commit -m "feat(landing): waitlist form with error and almost-done states"
 ### Task 7: Nav + Hero (with glass product mockup)
 
 **Files:**
+
 - Create: `apps/landing/src/components/nav.tsx`
 - Create: `apps/landing/src/components/hero.tsx`
 - Modify: `apps/landing/src/app.tsx`
 
 **Interfaces:**
+
 - Consumes: `WaitlistForm` (Task 6), `GlassPanel` (Task 3), `animate-float` utility (Task 4).
 - Produces: `Nav()`, `Hero()` — no props.
 
@@ -1360,6 +1375,7 @@ pnpm --filter @omahi/landing typecheck && pnpm dev:landing
 ```
 
 In the browser, confirm against the design:
+
 1. Sticky frosted nav with wordmark + two links + pill CTA.
 2. Hero: badge with 4 phase dots, balanced headline with rose-colored "your cycle", pitch paragraph, glass form card, floating mockup with two gently bobbing pills.
 3. Form behavior: submit empty → "Pop your email in first."; type `foo` → "That doesn't look like an email — mind checking?"; typing clears the error; `you@email.com` → new tab opens on `herhustlestack.substack.com/subscribe?email=you%40email.com` and the card flips to "Almost done" with the fallback link.
@@ -1380,11 +1396,13 @@ git commit -m "feat(landing): sticky nav and hero with glass product mockup"
 ### Task 8: Phase cards + features sections
 
 **Files:**
+
 - Create: `apps/landing/src/components/phase-cards.tsx`
 - Create: `apps/landing/src/components/features.tsx`
 - Modify: `apps/landing/src/app.tsx`
 
 **Interfaces:**
+
 - Consumes: `GlassCard`, `PHASE_STYLE`, `ambient` (Tasks 1, 3).
 - Produces: `PhaseCards()`, `Features()` — no props.
 
@@ -1584,10 +1602,12 @@ git commit -m "feat(landing): phase cards and feature grid"
 ### Task 9: FAQ accordion
 
 **Files:**
+
 - Create: `apps/landing/src/components/faq.tsx`
 - Modify: `apps/landing/src/app.tsx`
 
 **Interfaces:**
+
 - Consumes: `config.launchWindow` (Task 4).
 - Produces: `Faq()` — no props. Single-open accordion, first item open by default, `+` rotates 45° when open.
 
@@ -1701,12 +1721,14 @@ git commit -m "feat(landing): FAQ accordion"
 ### Task 10: Closing CTA, footer, final composition, deploy README
 
 **Files:**
+
 - Create: `apps/landing/src/components/closing-cta.tsx`
 - Create: `apps/landing/src/components/footer.tsx`
 - Create: `apps/landing/README.md`
 - Modify: `apps/landing/src/app.tsx`
 
 **Interfaces:**
+
 - Consumes: nothing new.
 - Produces: the finished page and the documented deploy path.
 

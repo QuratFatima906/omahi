@@ -13,13 +13,13 @@ lockstep.
 
 ## Decisions
 
-| Decision      | Choice                                                          |
-| ------------- | --------------------------------------------------------------- |
-| Approach      | Shared glass library (`packages/ui`) consumed by both apps      |
-| Framework     | Vite + React 19 + TypeScript strict + Tailwind v4 (static site) |
+| Decision      | Choice                                                                                                      |
+| ------------- | ----------------------------------------------------------------------------------------------------------- |
+| Approach      | Shared glass library (`packages/ui`) consumed by both apps                                                  |
+| Framework     | Vite + React 19 + TypeScript strict + Tailwind v4 (static site)                                             |
 | Waitlist dest | Substack (herhustlestack.substack.com): local validation, then open `/subscribe?email=<email>` in a new tab |
-| Social proof  | Configurable count in `config.ts` ("Join N+ already on the list"), hand-edited |
-| Deploy        | Cloudflare (git integration), custom domain omahi.app, Vite `base: '/'` |
+| Social proof  | Configurable count in `config.ts` ("Join N+ already on the list"), hand-edited                              |
+| Deploy        | Cloudflare (git integration), custom domain omahi.app, Vite `base: '/'`                                     |
 
 ## `packages/ui` — `@omahi/ui`
 
@@ -96,7 +96,7 @@ apps/landing/
 - **FAQ:** five questions from the design, single-open accordion,
   `+` rotates 45° when open.
 - **Social proof:** `Join {waitlistCount.toLocaleString()}+ already on the
-  list · no spam, ever` from `config.ts`.
+list · no spam, ever` from `config.ts`.
 - All copy, palette, spacing, and layout taken from the design file,
   including footer disclaimer "Lifestyle guidance, not medical advice."
   (project hard rule: suggestions, not medical advice).
