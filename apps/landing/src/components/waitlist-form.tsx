@@ -59,7 +59,7 @@ export function WaitlistForm() {
   return (
     <GlassCard className="max-w-[480px] bg-glass-soft p-[22px] shadow-[0_18px_48px_rgba(46,34,38,0.1)]">
       <div className="flex flex-col gap-3">
-        <div className="text-[17px] font-semibold tracking-[-0.01em]">Join the waitlist</div>
+        <div className="text-[17px] font-bold tracking-[-0.01em]">Join the waitlist</div>
         <form noValidate onSubmit={onSubmit} className="flex flex-wrap gap-2.5">
           <input
             ref={emailRef}

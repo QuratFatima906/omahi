@@ -41,7 +41,7 @@ export function Faq() {
           <div className="mb-3 text-[12.5px] font-bold tracking-[0.2em] text-[#c15b7a] uppercase">
             Good questions
           </div>
-          <h2 className="m-0 text-[clamp(26px,4vw,40px)] leading-[1.1] font-semibold tracking-[-0.02em]">
+          <h2 className="m-0 text-[clamp(26px,4vw,40px)] leading-[1.1] font-extrabold tracking-[-0.02em]">
             Before you join
           </h2>
         </div>

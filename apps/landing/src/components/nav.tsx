@@ -6,10 +6,10 @@ export function Nav() {
         omahi
       </span>
       <div className="flex items-center gap-[clamp(14px,3vw,34px)]">
-        <a href="#how" className="text-[14.5px] font-semibold text-ink/60 hover:text-ink">
+        <a href="#how" className="text-[14.5px] font-bold text-ink/75 hover:text-ink">
           How it works
         </a>
-        <a href="#faq" className="text-[14.5px] font-semibold text-ink/60 hover:text-ink">
+        <a href="#faq" className="text-[14.5px] font-bold text-ink/75 hover:text-ink">
           FAQ
         </a>
         <a

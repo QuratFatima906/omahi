@@ -14,6 +14,17 @@
       transform: translateY(-12px);
     }
   }
+  /* Gentler drift for the pill over the nudge card, so it never rises onto the text. */
+  --animate-float-sm: float-sm 6s ease-in-out infinite;
+  @keyframes float-sm {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-5px);
+    }
+  }
 }
 
 html {

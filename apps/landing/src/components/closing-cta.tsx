@@ -15,7 +15,7 @@ export function ClosingCta() {
           <span className="font-display text-[clamp(48px,7vw,78px)] leading-none font-bold tracking-[-0.02em] text-white">
             omahi
           </span>
-          <h2 className="m-0 text-[clamp(26px,4vw,42px)] leading-[1.1] font-semibold tracking-[-0.02em] text-balance text-white">
+          <h2 className="m-0 text-[clamp(26px,4vw,42px)] leading-[1.1] font-extrabold tracking-[-0.02em] text-balance text-white">
             Love every phase.
           </h2>
           <p className="m-0 max-w-[440px] text-[clamp(15px,2vw,18px)] leading-[1.55] text-white/85">

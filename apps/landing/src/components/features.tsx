@@ -31,7 +31,7 @@ export function Features() {
           <div className="mb-3 text-[12.5px] font-bold tracking-[0.2em] text-[#c15b7a] uppercase">
             What you get
           </div>
-          <h2 className="m-0 text-[clamp(28px,4.5vw,44px)] leading-[1.1] font-semibold tracking-[-0.02em]">
+          <h2 className="m-0 text-[clamp(28px,4.5vw,44px)] leading-[1.1] font-extrabold tracking-[-0.02em]">
             A calmer way to run your week.
           </h2>
         </div>

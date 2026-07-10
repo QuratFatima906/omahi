@@ -47,7 +47,7 @@ export function PhaseCards() {
           <div className="mb-3 text-[12.5px] font-bold tracking-[0.2em] text-[#c15b7a] uppercase">
             Four phases, one companion
           </div>
-          <h2 className="m-0 text-[clamp(28px,4.5vw,44px)] leading-[1.1] font-semibold tracking-[-0.02em]">
+          <h2 className="m-0 text-[clamp(28px,4.5vw,44px)] leading-[1.1] font-extrabold tracking-[-0.02em]">
             Your body has a rhythm. Omahi plans with it.
           </h2>
         </div>

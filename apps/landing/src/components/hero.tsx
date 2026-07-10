@@ -36,7 +36,7 @@ function ProductMockup() {
                 <div className="text-[11px] font-bold tracking-[0.14em] text-[#d96f3f] uppercase">
                   Follicular · day 9
                 </div>
-                <div className="mt-[5px] text-[22px] leading-[1.25] font-semibold tracking-[-0.01em]">
+                <div className="mt-[5px] text-[22px] leading-[1.25] font-bold tracking-[-0.01em]">
                   Big-idea energy
                 </div>
               </div>
@@ -103,8 +103,8 @@ function ProductMockup() {
         <span className="text-[12.5px] font-bold">Ovulation in 6 days</span>
       </div>
       <div
-        className="animate-float absolute bottom-[30px] -left-[20px] flex items-center gap-[9px] rounded-[14px] border border-white/75 bg-white/55 px-[13px] py-[9px] shadow-[0_14px_30px_rgba(46,34,38,0.14)] backdrop-blur-[20px] backdrop-saturate-[1.7]"
-        style={{ animationDuration: '6s', animationDelay: '0.6s' }}
+        className="animate-float-sm absolute -bottom-[10px] -left-[20px] flex items-center gap-[9px] rounded-[14px] border border-white/75 bg-white/55 px-[13px] py-[9px] shadow-[0_14px_30px_rgba(46,34,38,0.14)] backdrop-blur-[20px] backdrop-saturate-[1.7]"
+        style={{ animationDelay: '0.6s' }}
       >
         <div className="size-2.5 rounded-full bg-[#c74b6b]" />
         <span className="text-[12.5px] font-bold">Rest counts as progress</span>
@@ -148,7 +148,7 @@ export function Hero() {
             </span>
           </div>
 
-          <h1 className="m-0 text-[clamp(40px,6vw,66px)] leading-[1.05] font-semibold tracking-[-0.03em] text-balance">
+          <h1 className="m-0 text-[clamp(40px,6vw,66px)] leading-[1.05] font-extrabold tracking-[-0.03em] text-balance">
             Plan your days around <span className="text-[#d14c72]">your cycle</span>, not against
             it.
           </h1>
