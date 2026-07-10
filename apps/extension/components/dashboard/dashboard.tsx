@@ -1,9 +1,8 @@
 import { PHASES, type CycleConfig } from '@omahi/core';
 import { getDashboardModel } from '../../lib/dashboard';
 import { CycleRing } from '../cycle-ring';
-import { ambient, GlassScreen } from '../glass-screen';
+import { ambient, GlassScreen, PHASE_STYLE } from '@omahi/ui';
 import { CalendarIcon, GearIcon } from '../icons';
-import { PHASE_STYLE } from '../phase-style';
 
 interface DashboardProps {
   config: CycleConfig;

@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import '../../assets/theme.css';
+import '../../assets/extension.css';
 import App from './app.tsx';
 
 // Stamped before React renders so the (blocking) stylesheet paints the

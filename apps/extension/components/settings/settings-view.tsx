@@ -14,9 +14,8 @@ import {
   StorageSchemaError,
   type OmahiState,
 } from '../../lib/storage';
-import { ambient, GlassScreen } from '../glass-screen';
+import { ambient, GlassScreen, PHASE_STYLE } from '@omahi/ui';
 import { MonthCalendar } from '../month-calendar';
-import { PHASE_STYLE } from '../phase-style';
 import { ToggleSwitch } from '../toggle-switch';
 
 interface SettingsViewProps {

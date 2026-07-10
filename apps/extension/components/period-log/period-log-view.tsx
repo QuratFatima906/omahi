@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { PrimaryButton, SecondaryButton } from '../onboarding/buttons';
 import { formatHumanDate } from '../../lib/month-grid';
 import { omahiStorage, type OmahiState } from '../../lib/storage';
-import { ambient, GlassScreen } from '../glass-screen';
+import { ambient, GlassScreen, PHASE_STYLE } from '@omahi/ui';
 import { MonthCalendar } from '../month-calendar';
-import { PHASE_STYLE } from '../phase-style';
 
 interface PeriodLogViewProps {
   state: OmahiState;

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ambient, GlassScreen } from '../glass-screen';
+import { ambient, GlassScreen } from '@omahi/ui';
 
 interface StepShellProps {
   step: 1 | 2 | 3;
