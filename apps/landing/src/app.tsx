@@ -1,5 +1,7 @@
-import { Features } from './components/features';
+import { ClosingCta } from './components/closing-cta';
 import { Faq } from './components/faq';
+import { Features } from './components/features';
+import { Footer } from './components/footer';
 import { Hero } from './components/hero';
 import { Nav } from './components/nav';
 import { PhaseCards } from './components/phase-cards';
@@ -12,6 +14,8 @@ export default function App() {
       <PhaseCards />
       <Features />
       <Faq />
+      <ClosingCta />
+      <Footer />
     </div>
   );
 }
