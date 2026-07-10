@@ -6,5 +6,5 @@
 export const config = {
   waitlistCount: 3200,
   showSocialProof: true,
-  launchWindow: 'late 2026',
+  launchWindow: 'October 2026',
 } as const;
