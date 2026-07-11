@@ -101,10 +101,16 @@
   color: transparent;
 }
 
-/* Keyboard navigation: one visible, brand-colored focus ring everywhere. */
-:focus-visible {
-  outline: 2px solid var(--color-rose);
-  outline-offset: 2px;
+/*
+ * Keyboard navigation: one visible, brand-colored focus ring everywhere.
+ * In @layer base so utilities (e.g. outline-none) can override it for
+ * elements that draw their own focus treatment.
+ */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-rose);
+    outline-offset: 2px;
+  }
 }
 
 /*

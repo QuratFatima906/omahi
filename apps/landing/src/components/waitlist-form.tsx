@@ -67,7 +67,7 @@ export function WaitlistForm() {
             type="email"
             placeholder="you@email.com"
             aria-label="Email address"
-            className={`min-w-0 flex-[1_1_200px] rounded-[14px] border-[1.5px] bg-white/60 px-4 py-3.5 text-base text-ink outline-none focus:border-rose ${
+            className={`min-w-0 flex-[1_1_200px] rounded-[14px] border-[1.5px] bg-white/60 px-4 py-3.5 text-base text-ink outline-none transition-[border-color,box-shadow,background-color] duration-200 focus:border-white focus:bg-white/75 focus:shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_0_0_3px_rgba(255,255,255,0.35),0_2px_14px_rgba(201,78,134,0.16)] ${
               error ? 'border-[#e0a7a0]' : 'border-white/80'
             }`}
           />

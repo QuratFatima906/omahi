@@ -4,7 +4,7 @@
  * set `showSocialProof: false` to hide the count while it's small.
  */
 export const config = {
-  waitlistCount: 3200,
-  showSocialProof: true,
+  waitlistCount: 50,
+  showSocialProof: false,
   launchWindow: 'October 2026',
 } as const;
