@@ -2,7 +2,7 @@
 
 Public waitlist landing page for [omahi.app](https://omahi.app). Static
 Vite + React site; the waitlist itself lives on Substack (the form opens
-`herhustlestack.substack.com/subscribe` with the email prefilled — no
+`omahiapp.substack.com/subscribe` with the email prefilled — no
 backend, no env vars).
 
 ## Develop
