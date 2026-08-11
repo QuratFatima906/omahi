@@ -6,7 +6,7 @@
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export const SUBSTACK_SUBSCRIBE_BASE = 'https://herhustlestack.substack.com/subscribe';
+export const SUBSTACK_SUBSCRIBE_BASE = 'https://omahiapp.substack.com/subscribe';
 
 export type EmailValidation = { ok: true; email: string } | { ok: false; message: string };
 

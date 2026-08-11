@@ -36,19 +36,19 @@ describe('validateEmail', () => {
 describe('substackSubscribeUrl', () => {
   it('builds the prefilled subscribe URL', () => {
     expect(substackSubscribeUrl('you@email.com')).toBe(
-      'https://herhustlestack.substack.com/subscribe?email=you%40email.com',
+      'https://omahiapp.substack.com/subscribe?email=you%40email.com',
     );
   });
 
   it('URL-encodes characters that are meaningful in query strings', () => {
     expect(substackSubscribeUrl('a+b&c=d@email.com')).toBe(
-      'https://herhustlestack.substack.com/subscribe?email=a%2Bb%26c%3Dd%40email.com',
+      'https://omahiapp.substack.com/subscribe?email=a%2Bb%26c%3Dd%40email.com',
     );
   });
 
   it('trims whitespace before encoding', () => {
     expect(substackSubscribeUrl(' you@email.com ')).toBe(
-      'https://herhustlestack.substack.com/subscribe?email=you%40email.com',
+      'https://omahiapp.substack.com/subscribe?email=you%40email.com',
     );
   });
 });
