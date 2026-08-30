@@ -211,12 +211,12 @@ export function SettingsView({ state, todayIso, onBack, onStateChange }: Setting
         <Group title="New tab">
           <Row>
             <div>
-              <div className="text-[13.5px]">Show Omahi on every new tab</div>
-              <div className="mt-0.5 text-xs text-ink-faint">Phase + today&apos;s plan</div>
+              <div className="text-[13.5px]">Show my plan on every new tab</div>
+              <div className="mt-0.5 text-xs text-ink-faint">Off leaves a clock and search</div>
             </div>
             <ToggleSwitch
               checked={state.settings.newTabEnabled}
-              label="Show Omahi on every new tab"
+              label="Show my plan on every new tab"
               onToggle={() => void omahiStorage.toggleNewTab().then(onStateChange)}
             />
           </Row>

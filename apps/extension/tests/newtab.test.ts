@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { CycleConfig } from '@omahi/core';
-import { formatClock, formatDateLine, getGreeting, getNewTabModel } from '../lib/newtab';
+import {
+  formatClock,
+  formatDateLine,
+  getGreeting,
+  getNewTabModel,
+  searchFallbackUrl,
+} from '../lib/newtab';
 
 // Phase ranges for this config: menstruation 1–5, follicular 6–12,
 // ovulation 13–15, luteal 16–28.
@@ -70,16 +76,41 @@ describe('getGreeting', () => {
 });
 
 describe('clock formatting', () => {
-  it('drops the day period in 12-hour locales', () => {
-    expect(formatClock(new Date(2026, 6, 10, 9, 41), 'en-US')).toBe('9:41');
-    expect(formatClock(new Date(2026, 6, 10, 14, 15), 'en-US')).toBe('2:15');
+  it('zero-pads the hour and returns the day period separately', () => {
+    expect(formatClock(new Date(2026, 6, 10, 9, 41), 'en-US')).toEqual({
+      time: '09:41',
+      period: 'AM',
+    });
+    expect(formatClock(new Date(2026, 6, 10, 14, 15), 'en-US')).toEqual({
+      time: '02:15',
+      period: 'PM',
+    });
+    expect(formatClock(new Date(2026, 6, 10, 0, 5), 'en-US')).toEqual({
+      time: '12:05',
+      period: 'AM',
+    });
   });
 
   it('leaves 24-hour locales untouched', () => {
-    expect(formatClock(new Date(2026, 6, 10, 14, 15), 'de-DE')).toBe('14:15');
+    expect(formatClock(new Date(2026, 6, 10, 14, 15), 'de-DE')).toEqual({
+      time: '14:15',
+      period: '',
+    });
   });
 
   it('formats the date line as weekday, month day', () => {
     expect(formatDateLine(new Date(2026, 6, 10), 'en-US')).toBe('Friday, July 10');
+  });
+});
+
+describe('searchFallbackUrl', () => {
+  it('encodes the query', () => {
+    expect(searchFallbackUrl('cramps & rest')).toBe(
+      'https://www.google.com/search?q=cramps%20%26%20rest',
+    );
+  });
+
+  it.each(['', '   '])('returns null for %o so a blank submit no-ops', (query) => {
+    expect(searchFallbackUrl(query)).toBeNull();
   });
 });

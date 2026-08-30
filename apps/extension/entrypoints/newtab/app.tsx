@@ -1,10 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { browser } from 'wxt/browser';
 import { CycleRing } from '../../components/cycle-ring';
 import { GearIcon } from '../../components/icons';
 import { PrimaryButton } from '../../components/onboarding/buttons';
 import { PHASE_STYLE } from '@omahi/ui';
-import { formatClock, formatDateLine, getGreeting, getNewTabModel } from '../../lib/newtab';
+import {
+  formatClock,
+  formatDateLine,
+  getGreeting,
+  getNewTabModel,
+  searchFallbackUrl,
+} from '../../lib/newtab';
 import { effectiveCycleConfig } from '../../lib/period-log';
 import { omahiStorage, type OmahiState } from '../../lib/storage';
 
@@ -73,14 +79,74 @@ function AppOverlay({ onClose }: { onClose: () => void }) {
   );
 }
 
-/** Quiet fallback when the user turned the override off in settings. */
+/**
+ * The override-off page. Chrome cannot hand its own new tab back while an
+ * extension declares `chrome_url_overrides.newtab`, so "off" can only ever be
+ * a page of ours — it just must not be an *Omahi* page. Clock plus a search
+ * field, no phase tint, no cycle copy, nothing that keys to the cycle.
+ *
+ * No gear either: the popup is one toolbar click away and everything the gear
+ * would open belongs to a plan this page is deliberately not showing.
+ */
 function DisabledState() {
+  const now = useNow();
+  const [query, setQuery] = useState('');
+
+  const runSearch = (event: React.FormEvent) => {
+    event.preventDefault();
+    const url = searchFallbackUrl(query);
+    if (url === null) return;
+    // chrome.search honours whatever engine the user actually set; the URL
+    // fallback covers browsers/builds without the API.
+    const search = (browser as { search?: { query(options: { text: string }): void } }).search;
+    if (search) search.query({ text: query.trim() });
+    else window.location.assign(url);
+  };
+
   return (
-    <div className="flex min-h-screen items-end justify-start bg-surface p-5">
-      <p className="text-[12.5px] text-ink-ghost" data-newtab="disabled">
-        Omahi&apos;s new tab is off — turn it on in the popup&apos;s settings.
-      </p>
+    <div className="relative min-h-screen bg-surface" data-newtab="disabled">
+      <div className="px-10 py-7">
+        <Wordmark />
+      </div>
+
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-12 px-8">
+        <ClockBlock now={now} quiet={false} />
+        <form
+          onSubmit={runSearch}
+          role="search"
+          className="flex w-[520px] max-w-full items-center gap-3 rounded-full border border-glass-border bg-glass px-6 py-4 shadow-[0_12px_36px_rgba(46,34,38,0.08)] backdrop-blur-[30px] backdrop-saturate-150"
+        >
+          <SearchIcon />
+          <input
+            // Chrome usually keeps focus in the omnibox on a new tab; when it
+            // doesn't, the same keystrokes still land somewhere that searches.
+            autoFocus
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search the web"
+            aria-label="Search the web"
+            data-newtab="search"
+            className="w-full bg-transparent text-[17px] text-ink placeholder:text-ink/35 focus:outline-none"
+          />
+        </form>
+      </div>
     </div>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" className="text-ink/35" />
+      <path
+        d="M16.5 16.5 21 21"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        className="text-ink/35"
+      />
+    </svg>
   );
 }
 
@@ -151,18 +217,57 @@ function QuietToggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
 
 /** Clock block shared by the normal and quiet layouts (quiet enlarges it). */
 function ClockBlock({ now, quiet }: { now: Date; quiet: boolean }) {
+  const clock = useRef<HTMLDivElement>(null);
+  const digits = useRef<HTMLSpanElement>(null);
+  const { time, period } = formatClock(now);
+
+  /**
+   * Optical centring. `text-center` aligns advance widths, but a "1" is drawn
+   * with far less ink than its slot allows: at 136px "1:04" lands 7.7px right
+   * of centre while "9:07" lands at 0.1px, so a centred clock visibly slides
+   * as the minutes tick. Measure the real ink box and cancel the offset.
+   *
+   * Measured on the digits (which carry the whole optical weight) but applied
+   * to the row, so the AM tag keeps its gap instead of being pushed around.
+   * ponytail: not re-measured on resize — crossing the 900px breakpoint
+   * leaves the nudge ~2px stale until the next minute; add a resize listener
+   * only if that ever shows up.
+   */
+  useLayoutEffect(() => {
+    const row = clock.current;
+    const element = digits.current;
+    const context = element && document.createElement('canvas').getContext('2d');
+    if (!row || !element || !context) return;
+    const style = getComputedStyle(element);
+    context.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+    context.letterSpacing = style.letterSpacing;
+    const metrics = context.measureText(time);
+    const drift =
+      (metrics.actualBoundingBoxRight - metrics.actualBoundingBoxLeft) / 2 - metrics.width / 2;
+    row.style.transform = `translateX(${-drift}px)`;
+  }, [time, quiet]);
+
   return (
     <div className="flex flex-col items-center gap-1.5 text-center">
       <div className="text-[23px] font-medium text-ink/50">{getGreeting(now)}</div>
       <div
+        ref={clock}
         className={
           quiet
-            ? 'text-[172px] leading-none font-extralight tracking-[-0.02em] text-ink max-[900px]:text-[120px]'
-            : 'text-[136px] leading-none font-extralight tracking-[-0.02em] text-ink max-[900px]:text-[96px]'
+            ? 'flex items-baseline justify-center text-[172px] leading-none font-bold tracking-[-0.02em] text-ink max-[900px]:text-[120px]'
+            : 'flex items-baseline justify-center text-[136px] leading-none font-bold tracking-[-0.02em] text-ink max-[900px]:text-[96px]'
         }
         data-newtab="clock"
       >
-        {formatClock(now)}
+        <span ref={digits}>{time}</span>
+        {/* em-sized so one rule covers both the 136px and 172px clocks. The
+            margin resolves against THIS span's 0.2em size, so 0.55em here is
+            ~0.11em of the clock — matching the gap at either size. */}
+        {period !== '' && (
+          <span className="ml-[0.55em] text-[0.2em] font-semibold tracking-[0.12em] text-ink/75">
+            {period}
+          </span>
+        )}
       </div>
       <div className="mt-2 text-[20px] font-medium text-ink/45">{formatDateLine(now)}</div>
     </div>
@@ -208,13 +313,16 @@ function NewTabDashboard({
               background: `radial-gradient(700px 520px at 28% 18%, ${tint(9)}, transparent 70%), radial-gradient(820px 600px at 74% 82%, ${tint(8)}, transparent 70%)`,
             }}
           />
+          {/* Translated to their own centres: `left`/`top` alone anchor the
+              top-left corner, which pushed the glow ~140px right of the card
+              it sits behind and skewed the whole composition's optical axis. */}
           <div
-            className="pointer-events-none absolute h-[280px] w-[460px] rounded-full blur-[80px]"
-            style={{ left: '44%', top: '50%', background: tint(16) }}
+            className="pointer-events-none absolute h-[280px] w-[460px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[80px]"
+            style={{ left: '50%', top: '58%', background: tint(16) }}
           />
           <div
-            className="pointer-events-none absolute h-[230px] w-[380px] rounded-full blur-[80px]"
-            style={{ left: '58%', top: '62%', background: tint(13) }}
+            className="pointer-events-none absolute h-[230px] w-[380px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[80px]"
+            style={{ left: '50%', top: '72%', background: tint(13) }}
           />
         </>
       )}
@@ -239,10 +347,10 @@ function NewTabDashboard({
           className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-8"
           data-newtab="quiet"
         >
+          {/* Clock only. Copy about a hidden plan would itself announce that
+              there is a plan to hide — the pill in the header is the whole
+              affordance. */}
           <ClockBlock now={now} quiet />
-          <div className="mt-[26px] text-[18px] font-medium text-ink/40">
-            Your plan is hidden — tap Quiet to bring it back
-          </div>
         </div>
       ) : (
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-12 px-8">

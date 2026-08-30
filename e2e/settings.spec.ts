@@ -38,14 +38,14 @@ test('new-tab toggle flips and persists', async ({ context, extensionId }) => {
   const page = await context.newPage();
   await openSettings(page, extensionId);
 
-  const toggle = page.getByRole('switch', { name: 'Show Omahi on every new tab' });
+  const toggle = page.getByRole('switch', { name: 'Show my plan on every new tab' });
   await expect(toggle).toHaveAttribute('aria-checked', 'true');
   await toggle.click();
   await expect(toggle).toHaveAttribute('aria-checked', 'false');
 
   await page.reload();
   await page.getByRole('button', { name: 'Settings' }).click();
-  await expect(page.getByRole('switch', { name: 'Show Omahi on every new tab' })).toHaveAttribute(
+  await expect(page.getByRole('switch', { name: 'Show my plan on every new tab' })).toHaveAttribute(
     'aria-checked',
     'false',
   );

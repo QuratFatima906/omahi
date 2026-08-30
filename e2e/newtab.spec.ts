@@ -80,7 +80,10 @@ test('quiet mode collapses to clock only and persists across tabs', async ({
   await page.locator('[data-newtab="quiet-toggle"]').click();
   await expect(page.locator('[data-newtab="quiet"]')).toBeVisible();
   await expect(page.locator('[data-newtab="clock"]')).toBeVisible();
-  await expect(page.getByText('Your plan is hidden — tap Quiet to bring it back')).toBeVisible();
+  // Clock only: even copy ABOUT a hidden plan would announce there is one.
+  await expect(page.locator('[data-newtab="quiet"]')).toHaveText(
+    /^Good (morning|afternoon|evening)\d{2}[:.]\d{2}([AP]M)?\w+day, /,
+  );
   await expect(page.getByText('Fresh start')).toBeHidden();
 
   // Quiet is stored: a tab opened mid-screen-share must come up quiet too.
@@ -128,6 +131,13 @@ test('toggling off propagates LIVE to an already-open new tab', async ({
 
   await expect(page.locator('[data-newtab="disabled"]')).toBeVisible();
   await expect(page.locator('[data-newtab="dashboard"]')).toBeHidden();
+  // Off is a plain new tab, not an empty one: clock and search stay, every
+  // cycle-keyed surface goes.
+  await expect(page.locator('[data-newtab="clock"]')).toBeVisible();
+  await expect(page.locator('[data-newtab="search"]')).toBeVisible();
+  await expect(page.locator('[data-newtab="quiet-toggle"]')).toBeHidden();
+  // No gear: nothing it opens belongs on a page that hides the plan.
+  await expect(page.locator('[aria-label="Open Omahi"]')).toHaveCount(0);
 });
 
 test('before onboarding, the new tab invites setup', async ({ context, extensionId }) => {
