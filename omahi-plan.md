@@ -342,17 +342,52 @@ Each chunk = one standalone, independently testable PR.
 - **MVP surface:** popup + new-tab page (new-tab = Chunk 9)
 - **Copy:** English only for v1 (Urdu/Punjabi voice packs = v2 chunk 18)
 
-### Still open (confirm before relevant chunk)
+### Settled by implementation (2026-08-30)
 
-1. **UI library:** React assumed — confirm before Chunk 0
-2. **Phase model:** `cycleLength − 14` ovulation heuristic + 3-day window assumed — confirm before Chunk 1
+Both of these were "confirm before Chunk 0/1". The chunks shipped, so the
+assumptions became the build — recorded here rather than left open.
+
+1. **UI library:** React 19 + TypeScript strict, via WXT's `@wxt-dev/module-react`
+2. **Phase model:** confirmed as built — ovulation ≈ `cycleLength − 14` with a
+   ±1-day window; menstruation wins when a long period would overlap it. See
+   `packages/core/src/phase-engine.ts`. Clinically unverified — see §7.
 
 ---
 
 ## 7. Verification Log (things I did not fully verify — check before relying)
 
-- WXT storage util exact API (`wxt/utils/storage`) — confirm in current WXT docs
-- Playwright MV3 extension testing setup (incl. `chrome_url_overrides` new-tab behavior) — follow the official Playwright guide, flags change between versions
-- Chrome Web Store fee (~$5 one-time) — approximate
+**Resolved by working code** (2026-08-30):
+
+- ~~WXT storage util exact API~~ — settled differently than planned: the app uses
+  `browser.storage.local` from `wxt/browser` directly, not `wxt/utils/storage`.
+  Covered by 67 unit tests in `apps/extension/tests/storage.test.ts`.
+- ~~Playwright MV3 extension testing setup~~ — working per the official guide
+  (persistent context, extension id from the service worker). The
+  `chrome_url_overrides` new-tab behaviour has its own passing spec,
+  `e2e/newtab.spec.ts` "chrome_url_overrides routes a fresh tab to the Omahi page".
+
+**Still unverified:**
+
+- Chrome Web Store fee (~$5 one-time) — still approximate, never checked against
+  the current developer dashboard
 - Payment providers for extensions (ExtensionPay/Paddle/LemonSqueezy) — unresearched, v2
-- Clinical accuracy of the phase model — verify against a reputable source before finalizing in-app copy
+- **Clinical accuracy of the phase model and the lifestyle copy** — never verified
+  against any source. Shipped in v1 behind the "suggestion, not medical advice"
+  disclaimer, which is the only control currently standing between the heuristic
+  and the user. Specifically unverified:
+  1. **Fixed 14-day luteal phase.** Luteal length varies between people and
+     between cycles; a constant shifts the predicted ovulation day.
+  2. **±1-day ovulation window.** This is a _phase label_, not a fertility
+     window — the biological fertile window is wider (sperm survive several
+     days pre-ovulation). Users may read the label as the latter. Omahi is not
+     a contraception or conception tool and copy must not imply it is.
+  3. **Accepted cycle range 21–40 days** vs. the commonly cited clinical
+     normal of 21–35.
+  4. **Phase → lifestyle mapping (§2).** The energy/food/workout guidance is
+     popular-science framing; evidence for cycle-phase-based training and
+     nutrition is thin and inconsistent in the literature.
+
+  Verifying means: source each claim against ACOG / NHS / Mayo (and, for the
+  training claims, a recent systematic review), write an evidence note per
+  claim, then decide whether any copy needs softening. A clinician read is the
+  gold standard; sourcing is the minimum bar.

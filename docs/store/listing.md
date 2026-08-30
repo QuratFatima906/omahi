@@ -48,11 +48,14 @@ English
 ## Assets checklist
 
 - [x] Icon 128×128 (`apps/extension/public/icon/128.png`, from the design project)
-- [ ] Screenshots 1280×800 (popup dashboard ×4 phases, calendar, new tab light/dark) — capture from `pnpm build` output
+- [x] Screenshots 1280×800 (popup dashboard ×4 phases, calendar, new tab light/dark) — `docs/store/screenshots/`
 - [ ] Small promo tile 440×280 (build from `assets/logo/omahi-badge-gradient.svg` in the design project)
 - [x] Privacy policy (`docs/privacy-policy.md` — host or paste into the developer dashboard)
 
 ## Data-use disclosures (developer dashboard)
 
 - Collects user data: **No** (all data stays local; nothing transmitted)
-- Permissions justification: `storage` — persist the user's cycle configuration and preferences locally
+- Permissions justification:
+  - `storage` — persist the user's cycle configuration and preferences locally
+  - `search` — send the query typed into the new-tab search box to the user's own
+    default search engine (used only when the new-tab plan is switched off)
