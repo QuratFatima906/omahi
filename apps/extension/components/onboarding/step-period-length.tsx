@@ -62,15 +62,15 @@ export function StepPeriodLength({
       </div>
       <div className="mt-[26px] flex items-center justify-between gap-3 rounded-[18px] border border-glass-border bg-glass px-[18px] py-4 backdrop-blur-[20px] backdrop-saturate-150">
         <div>
-          <div className="font-display text-[14.5px] font-bold">Omahi on every new tab?</div>
+          <div className="font-display text-[14.5px] font-bold">Your plan on every new tab?</div>
           <div className="mt-0.5 text-[12.5px] leading-normal text-ink-muted">
-            See your phase and today&apos;s plan each time you open a tab. Change any time in
-            settings.
+            Every new tab opens on your phase and today&apos;s plan. Off leaves a clock and search.
+            Change any time in settings.
           </div>
         </div>
         <ToggleSwitch
           checked={newTabEnabled}
-          label="Omahi on every new tab"
+          label="Your plan on every new tab"
           onToggle={onToggleNewTab}
         />
       </div>

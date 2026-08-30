@@ -104,17 +104,29 @@ export function getGreeting(date: Date): string {
 }
 
 /**
- * Locale-aware wall-clock time without the day period — the greeting already
- * says which half of the day it is (12h locales get "9:41", 24h get "14:15").
+ * Zero-padded wall-clock time and its day period, returned SEPARATELY so the
+ * clock can set them at different sizes — "01:28" as the hero with a small
+ * uppercase "AM" tag beside it. 24-hour locales emit no dayPeriod part, so
+ * they yield an empty period and the tag simply does not render.
  * `locale` is a test seam; production callers omit it (system locale).
+ *
+ * Padded from parts rather than via `hour: '2-digit'`: ICU downgrades that
+ * option to numeric under hour12 in several locales, so the leading zero is
+ * not actually guaranteed by the formatter.
  */
-export function formatClock(date: Date, locale?: string): string {
-  return new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' })
-    .formatToParts(date)
-    .filter((part) => part.type !== 'dayPeriod')
-    .map((part) => part.value)
-    .join('')
-    .trim();
+export function formatClock(date: Date, locale?: string): { time: string; period: string } {
+  const parts = new Intl.DateTimeFormat(locale, {
+    hour: 'numeric',
+    minute: '2-digit',
+  }).formatToParts(date);
+  const value = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? '';
+  return {
+    time: `${value('hour').padStart(2, '0')}:${value('minute')}`,
+    // \s covers the narrow no-break space ICU emits before AM/PM; the dot
+    // strips the "a.m." form some locales write.
+    period: value('dayPeriod').toUpperCase().replace(/[\s.]/g, ''),
+  };
 }
 
 /** "Friday, July 10" (localized). `locale` is a test seam like formatClock's. */
@@ -124,4 +136,14 @@ export function formatDateLine(date: Date, locale?: string): string {
     month: 'long',
     day: 'numeric',
   }).format(date);
+}
+
+/**
+ * Where a query goes when `chrome.search` is unavailable (Firefox, or a build
+ * without the permission). Returns null for a blank query so the caller can
+ * no-op instead of navigating to an empty results page.
+ */
+export function searchFallbackUrl(query: string): string | null {
+  const text = query.trim();
+  return text === '' ? null : `https://www.google.com/search?q=${encodeURIComponent(text)}`;
 }

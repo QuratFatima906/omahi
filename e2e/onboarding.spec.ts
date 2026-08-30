@@ -46,7 +46,7 @@ test('happy path: onboarding writes config and reopening skips it', async ({
     page.getByRole('heading', { name: 'And your period — how many days?' }),
   ).toBeVisible();
   await page.getByRole('button', { name: '6', exact: true }).click();
-  await expect(page.getByRole('switch', { name: 'Omahi on every new tab' })).toHaveAttribute(
+  await expect(page.getByRole('switch', { name: 'Your plan on every new tab' })).toHaveAttribute(
     'aria-checked',
     'true',
   );
@@ -136,7 +136,7 @@ test('"Not sure" anchors to today; new-tab toggle can be declined', async ({
   ).toBeVisible();
   await page.getByRole('button', { name: 'Continue' }).click();
 
-  await page.getByRole('switch', { name: 'Omahi on every new tab' }).click();
+  await page.getByRole('switch', { name: 'Your plan on every new tab' }).click();
   await page.getByRole('button', { name: 'Start planning' }).click();
   await expect(page.locator('main')).toHaveAttribute('data-onboarded', 'true');
 
